@@ -20,7 +20,7 @@ use App\Http\Controllers\TestController;
         return $request->user();
     });
 
-    Route::post('register', 'AuthController@register');
-    Route::post('login', 'AuthController@authenticate');
+    Route::post('register', '\App\Http\Controllers\AuthController@register');
+    Route::post('login', '\App\Http\Controllers\AuthController@authenticate');
     Route::get('test', 'TestController@test');
 
