@@ -1,4 +1,5 @@
-<?php
+<?php 
+
 namespace App\Http\Controllers;
 
 use App\Models\Persons;
@@ -8,7 +9,7 @@ use Illuminate\Http\Request;
 use JWTAuth;
 
 
-class PersonController extends Controllers {
+class PersonController extends Controller {
 
     public function __construct(){
     }
@@ -18,8 +19,9 @@ class PersonController extends Controllers {
      * @authenticated
      * @responseFile responses/Persons/PersonsIndex.json
      */
-    public function index(Request $request){   
-        $persons = Persons::where('status',true)->filtros($request['document_id'], $request['first_name'], $request['last_name'])->get();                 
+    public function index(){
+
+        return Persons::all();   
     }
 
 
@@ -55,43 +57,21 @@ class PersonController extends Controllers {
             ]);
 
             if($validator->passes()){
-                //Instanciamos la clase Persons
-                $person = new Persons;
-                //Declaramos el nombre con el nombre enviado en el request            
-                $person->first_name = $request->person['first_name'];
-                $person->middle_name = $request->person['middle_name'];
-                $person->last_name = $request->person['last_name'];
-                $person->second_last_name = $request->person['second_last_name'];
-                $person->id_person = $request->person['id_person'];
-                $person->email = $request->person['email'];
-                $person->password = $request->person['password'];
-                $person->is_admin = $request->person['is_admin'];
-                $person->is_eplanner = $request->person['is_eplanner'];
-                $person->is_eattendee = $request->person['is_eattendee'];
-                $person->status = true;
-                $person->id_user = JWTAuth::user()->id_user;
-                $person->username = JWTAuth::user()->username;
-                //Guardamos el cambio en nuestro modelo
-                $person->save();
                 
                 $user->id_person = $request->person['id_person'];
                 $user->password = $request->person['password'];
                 $user->status = true;
                 //Guardamos el cambio en nuestro modelo
                 $user->save();
+
+                return Person::create($request->all());
                     
                 }if($validator->fails()){
                 return response()->json($validator->errors()->all(), 422);
-            }else{
-            return response()->json("Unauthorized access", 403);
-        }
-        
-    }
+            }
 
-    /**
-     * Método update
-     * @authenticated
-     */
+    }
+    
     public function update(Request $request, $id){   
 
         if($id != $request->person['id_person']){
@@ -128,7 +108,8 @@ class PersonController extends Controllers {
                 $person->id_user = JWTAuth::user()->id_user;
                 $person->username = JWTAuth::user()->username;           
                 //Guardamos el cambio en nuestro modelo
-                $person->save();
+                $person->update();
+                return $person;
                     
                 }if($validator->fails()){
                     return response()->json($validator->errors()->all(), 422);
