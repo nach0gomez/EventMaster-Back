@@ -24,6 +24,13 @@ class PersonController extends Controller {
         return Persons::all();   
     }
 
+    public function index_id(Request $request){
+        $person = new User;
+        $id_person = $request->only('id');
+        $person = Person::findOrFail($id_person);
+        //$person = Person::join('users', 'persons.id_person', '=', 'users.id_person')->select('persons.*')->get();
+        return $persons;  
+    }
 
     /**
      * Método store
