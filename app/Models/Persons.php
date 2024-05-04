@@ -13,8 +13,8 @@ class Persons extends Model
     protected $fillable = [
             'first_name', 
             'middle_name', 
-            'last_name', '
-            second_last_name', 
+            'last_name', 
+            'second_last_name', 
             'email', 
             'is_admin', 
             'is_eplanner', 

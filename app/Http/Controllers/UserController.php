@@ -72,11 +72,12 @@ class UserController extends Controller
             if ($validator->passes()){
                 //DB::beginTransaction();
                 //try {
-
                 User::create($request->all());
+                $this->Password($request);
                 return response()->json([
                     'res'=> true,
                     'msg'=> 'Usuario creado con exito'
+
                 ]);
                 //DB::commit();
                 //}catch (\Exception $e) {
@@ -86,8 +87,44 @@ class UserController extends Controller
 
             } if($validator->fails()) {
                 return response()->json($validator->errors()->all(), 422);
-            }
+
+            } 
+            
     }
+    public function Password(Request $request) {
+
+        // Se agrega la validación
+        $validator = Validator::make($request->all(), [
+            'id_person' => 'required|exists:users,id_person'
+            //'id_person' => 'required|exists:persons,id_person'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->all(), 422);
+        }
+       //try {
+
+        //DB::beginTransaction();
+      
+        // Hashear la contraseña
+        $hashedPassword = Hash::make($request->password);
+      
+        // Actualizar la contraseña del usuario
+        
+        User::where("id_person", $request->id_person)->update(['password'=>$hashedPassword]);
+        //Persons::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
+
+        //DB::commit();
+
+      
+        return response()->json(['message' => 'la contraseña se actualizo con exito'], 200);
+
+       //} catch (Exception $e) {
+
+        //    DB::rollBack();
+        //    return response()->json(['error' => $e->getMessage()], 422);
+       }
+      
 
     public function update(Request $request, $id)
     {
