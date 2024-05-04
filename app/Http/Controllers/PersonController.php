@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Persons;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -25,11 +27,11 @@ class PersonController extends Controller {
     }
 
     public function index_id(Request $request){
-        $person = new User;
-        $id_person = $request->only('id');
-        $person = Person::findOrFail($id_person);
+        $person = new Persons;
+        $id_person = $request->only('id_person');
+        $person = Persons::findOrFail($id_person);
         //$person = Person::join('users', 'persons.id_person', '=', 'users.id_person')->select('persons.*')->get();
-        return $persons;  
+        return $person;  
     }
 
     /**
@@ -50,28 +52,32 @@ class PersonController extends Controller {
      */
     public function store(Request $request){
             $validator = Validator::make($request->all(),[
-                'person' => 'required|array',
-                'person.first_name' => 'required|string',
-                'person.middle_name' => 'nullable|string',
-                'person.last_name' => 'required|string',
-                'person.second_last_name' => 'nullable|string',
-                'person.id_person' => 'required|numeric',
-                'person.email' => 'required|string',
-                'person.password' => 'required|string',
-                'person.is_admin' => 'required|boolean',
-                'person.is_eplanner' => 'required|boolean',
-                'person.is_eattendee' => 'required|boolean',            
+                'first_name' => 'required|string',
+                'middle_name' => 'nullable|string',
+                'last_name' => 'required|string',
+                'second_last_name' => 'nullable|string',
+                'id_person' => 'required|numeric|exists:users,id_person|unique:persons,id_person',
+                'id_user' => 'required|numeric|exists:users,id_user|unique:persons,id_user',
+                'email' => 'required|string|exists:users,email|unique:persons,email',
+                'password' => 'required|string',
+                'is_eplanner' => 'required|boolean',
+                'is_eattendee' => 'required|boolean',            
             ]);
 
             if($validator->passes()){
-                
-                $user->id_person = $request->person['id_person'];
-                $user->password = $request->person['password'];
-                $user->status = true;
-                //Guardamos el cambio en nuestro modelo
-                $user->save();
 
-                return Person::create($request->all());
+                //DB::beginTransaction();
+                //try {
+                    Persons::create($request->all());
+                    return response()->json([
+                        'res'=> true,
+                        'msg'=> 'Persona creada con exito'
+                    ]);
+                //    DB::commit();
+                //}catch (\Exception $e) {
+                //    DB::rollback();
+                //    return response()->json('Ha ocurrido un error inesperado', 422);
+                //}
                     
                 }if($validator->fails()){
                 return response()->json($validator->errors()->all(), 422);
