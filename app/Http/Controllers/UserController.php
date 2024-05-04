@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-//use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use JWTAuth;
 use Illuminate\Support\Facades\Validator;
@@ -65,21 +65,24 @@ class UserController extends Controller
     public function store(Request $request)
     {
             $validator = Validator::make($request->all(),[
-                'id_person' => 'required|numeric|exists:persons,id_person|unique:users,id_person',
+                'id_person' => 'required|numeric|unique:users,id_person',
                 'username' => 'required|string|max:225|unique:users,username',
-                'password' => 'required|string|min:6|confirmed',
+                'password' => 'required|string|min:6',
                            ]);
             if ($validator->passes()){
-                DB::beginTransaction();
-                try {
+                //DB::beginTransaction();
+                //try {
 
-                return User::create($request->all());
-                
-                DB::commit();
-                }catch (\Exception $e) {
-                    DB::rollback();
-                    return response()->json('Ha ocurrido un error inesperado', 422);
-                }
+                User::create($request->all());
+                return response()->json([
+                    'res'=> true,
+                    'msg'=> 'Usuario creado con exito'
+                ]);
+                //DB::commit();
+                //}catch (\Exception $e) {
+                //    DB::rollback();
+                //    return response()->json('Ha ocurrido un error inesperado', 422);
+                //}
 
             } if($validator->fails()) {
                 return response()->json($validator->errors()->all(), 422);

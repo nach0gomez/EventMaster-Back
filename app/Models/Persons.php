@@ -24,5 +24,8 @@ class Persons extends Model
             'id_person', 
             'password', 
             'username'];
+    protected $hidden = [
+           'password'
+            ];
 
 } 
