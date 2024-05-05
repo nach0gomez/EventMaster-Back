@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use JWTAuth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Persons;
+use App\Models\Person;
 //use Mail;
 //use Mail\Create_User_Mail;
 //use Mail\NotificateRecuperacionContraseña;
@@ -73,7 +73,6 @@ class UserController extends Controller
                 //DB::beginTransaction();
                 //try {
                 User::create($request->all());
-                $this->Password($request);
                 return response()->json([
                     'res'=> true,
                     'msg'=> 'Usuario creado con exito'
@@ -91,40 +90,6 @@ class UserController extends Controller
             } 
             
     }
-    public function Password(Request $request) {
-
-        // Se agrega la validación
-        $validator = Validator::make($request->all(), [
-            'id_person' => 'required|exists:users,id_person'
-            //'id_person' => 'required|exists:persons,id_person'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors()->all(), 422);
-        }
-       //try {
-
-        //DB::beginTransaction();
-      
-        // Hashear la contraseña
-        $hashedPassword = Hash::make($request->password);
-      
-        // Actualizar la contraseña del usuario
-        
-        User::where("id_person", $request->id_person)->update(['password'=>$hashedPassword]);
-        //Persons::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
-
-        //DB::commit();
-
-      
-        return response()->json(['message' => 'la contraseña se actualizo con exito'], 200);
-
-       //} catch (Exception $e) {
-
-        //    DB::rollBack();
-        //    return response()->json(['error' => $e->getMessage()], 422);
-       }
-      
 
     public function update(Request $request, $id)
     {
@@ -145,19 +110,17 @@ class UserController extends Controller
         }
     }
 
-    public function delete(Request $request, $id)
+    public function delete(Request $request)
     {
-        if($id != $request->id_user){
-            return response()->json(['errors'=>array(['code'=>404,'message'=>'No se suministran los parámetros mínimos de búsqueda.'])],401);
-        }else{
+       
             $user = new User;
             $user = User::findOrFail($id);
             $user->delete();
-            $person = new Persons;
-            $person = Persons::findOrFail($id);
+            $person = new Person;
+            $person = Person::findOrFail($id);
             $person->delete();
             return response('No content', 204);
-        }
+        
     }
 
  /*cambio de contraseña*/
@@ -194,7 +157,7 @@ class UserController extends Controller
         // Actualizar la contraseña del usuario
         
         User::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
-        Persons::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
+        Person::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
 
         DB::commit();
 

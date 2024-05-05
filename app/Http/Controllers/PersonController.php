@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Persons;
+use App\Models\Person;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use JWTAuth;
 
 
@@ -23,33 +24,17 @@ class PersonController extends Controller {
      */
     public function index(){
 
-        return Persons::all();   
+        return Person::all();   
     }
 
     public function index_id(Request $request){
-        $person = new Persons;
+        $person = new Person;
         $id_person = $request->only('id_person');
-        $person = Persons::findOrFail($id_person);
+        $person = Person::findOrFail($id_person);
         //$person = Person::join('users', 'persons.id_person', '=', 'users.id_person')->select('persons.*')->get();
         return $person;  
     }
 
-    /**
-     * Método store
-     * @authenticated
-     * @bodyParam person array required Arreglo de personas.
-     * @bodyParam person.first_name string required Nombre(s) de la persona.
-     * @bodyParam person.last_name string required Apellido(s) de la persona.
-     * @bodyParam person.id_person int required Número de documento de la persona.
-     * @bodyParam person.email email Correo electrónico de la persona.
-     * @bodyParam person.is_admin boolean Booleano que indica si es administrador.
-     * @bodyParam person.is_eplanner boolean Booleano que indica si es organizador de eventos.
-     * @bodyParam person.is_eattendee boolean Booleano que indica si es asistente a eventos.
-     * @responseFile responses/Persons/PersonStore.json
-     * @responseFile 422 responses/ErrorGeneral/ErrorGeneral1.json
-     * @responseFile 402 responses/ErrorGeneral/ErrorGeneral2.json
-     * @responseFile 403 responses/ErrorGeneral/ErrorGeneral3.json
-     */
     public function store(Request $request){
             $validator = Validator::make($request->all(),[
                 'first_name' => 'required|string',
@@ -68,7 +53,8 @@ class PersonController extends Controller {
 
                 //DB::beginTransaction();
                 //try {
-                    Persons::create($request->all());
+                    Person::create($request->all());
+                    $this->Password($request);
                     return response()->json([
                         'res'=> true,
                         'msg'=> 'Persona creada con exito'
@@ -82,60 +68,80 @@ class PersonController extends Controller {
                 }if($validator->fails()){
                 return response()->json($validator->errors()->all(), 422);
             }
+    }
 
+    //funcion para hashear lsa contraseñas, tanto en usurios como en personas
+    public function Password(Request $request) 
+    {
+
+        // Se agrega la validación
+        $validator = Validator::make($request->all(), [
+            'id_person' => 'required|exists:persons,id_person'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->all(), 422);
+        }
+       //try {
+
+        //DB::beginTransaction();
+      
+        // Hashear la contraseña
+        $hashedPassword = Hash::make($request->password);
+      
+        // Actualizar la contraseña del usuario
+        
+        Person::where("id_person", $request->id_person)->update(['password'=>$hashedPassword]);
+        User::where("id_person", $request->id_person)->update(['password'=>$hashedPassword]);
+
+        //DB::commit();
+
+      
+        return response()->json(['res'=>true ], 200);
+
+       //} catch (Exception $e) {
+
+        //    DB::rollBack();
+        //    return response()->json(['error' => $e->getMessage()], 422);
     }
     
-    public function update(Request $request, $id){   
+    public function update(Request $request){   
 
-        if($id != $request->person['id_person']){
-                return response()->json(['errors'=>array(['code'=>404,'message'=>'No se suministran los parámetros mínimos de búsqueda.'])],401);
-            }else{
                 $validator = Validator::make($request->all(),[
-                'person' => 'required|array',
-                'person.first_name' => 'required|string',
-                'person.middle_name' => 'nullable|string',
-                'person.last_name' => 'required|string',
-                'person.second_last_name' => 'nullable|string',
-                'person.id_person' => 'required|numeric',
-                'person.email' => 'required|string',
-                'person.password' => 'required|string',
-                'person.is_admin' => 'required|boolean',
-                'person.is_eplanner' => 'required|boolean',
-                'person.is_eattendee' => 'required|boolean', 
+                'first_name' => 'required|string',
+                'middle_name' => 'nullable|string',
+                'last_name' => 'required|string',
+                'second_last_name' => 'nullable|string',
+                'id_person' => 'required|numeric|exists:users,id_person|exists:persons,id_person',
+                'id_user' => 'required|numeric|exists:users,id_user|exists:persons,id_user',
+                'email' => 'required|string',
+                'username' => 'required|string',
+                'status' => 'required|boolean',
+                'is_admin' => 'nullable|boolean',
+                'is_eplanner' => 'required|boolean',
+                'is_eattendee' => 'required|boolean', 
                 ]);
-                }if($validator->passes()){
-    
-                $person = Persons::findOrFail($id);
-                //Instanciamos la clase Persons
-                $person->first_name = $request->person['first_name'];
-                $person->middle_name = $request->person['middle_name'];
-                $person->last_name = $request->person['last_name'];
-                $person->second_last_name = $request->person['second_last_name'];
-                $person->id_person = $request->person['id_person'];
-                $person->email = $request->person['email'];
-                $person->password = $request->person['password'];
-                $person->is_admin = $request->person['is_admin'];
-                $person->is_eplanner = $request->person['is_eplanner'];
-                $person->is_eattendee = $request->person['is_eattendee'];
-                $person->status = true;
-                $person->id_user = JWTAuth::user()->id_user;
-                $person->username = JWTAuth::user()->username;           
-                //Guardamos el cambio en nuestro modelo
-                $person->update();
-                return $person;
+                if($validator->passes()){
+                Person::where("id_user", $request->id_user)->update($request->all());
+                User::where("id_user", $request->id_user)->update($request->
+                        only('email','id_person','username',"status"));
+                
+                return response()->json([
+                    'res'=> true,
+                    'msg'=> 'Persona editada con exito'
+                ],200);  
                     
                 }if($validator->fails()){
                     return response()->json($validator->errors()->all(), 422);
                 } 
     }
 
-    public function delete($id){
-        if($id === null){
-            return response()->json(['errors'=>array(['code'=>401,'message'=>'No se suministran los parámetros mínimos de búsqueda.'])],401);
-        }else{
-                $person = Persons::findOrFail($id);
-                $person->delete();
-                return response('No content', 204);
-            }
+    public function delete(Request $request){
+        Person::delete($request->id_person);
+        return response()->json([
+            'res'=> true,
+            'msg'=> 'Persona eliminada con exito'
+        ],200); 
+            
     }
 }

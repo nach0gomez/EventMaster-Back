@@ -4,8 +4,9 @@ namespace  App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Persons extends Model
+class Person extends Model
 {
+    protected $table = 'persons';
     //nombre de la llave primaria
     protected $primaryKey = 'id_person';
 

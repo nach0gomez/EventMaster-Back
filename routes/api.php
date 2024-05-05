@@ -28,12 +28,12 @@ use App\Http\Controllers\AuthController;
     Route::get('test', 'TestController@test');
     Route::post('add_new_person', 'PersonController@store');
     Route::put('edit_person', 'PersonController@update');
-    Route::post('delect_person', 'PersonController@destroy');
+    Route::delete('delete_person', 'PersonController@delete');
     Route::get('get_person', 'PersonController@index');
     Route::get('get_person_id', 'PersonController@index_id');
     Route::post('add_new_user', 'UserController@store');
     Route::put('edit_user', 'UserController@update');
-    Route::post('delect_user', 'UserController@delete');
+    Route::delete('delete_user', 'UserController@delete');
     Route::get('get_user', 'UserController@index');
     Route::get('get_user_id', 'UserController@index_id');
 
