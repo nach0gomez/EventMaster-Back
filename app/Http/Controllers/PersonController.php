@@ -41,8 +41,7 @@ class PersonController extends Controller {
                 'middle_name' => 'nullable|string',
                 'last_name' => 'required|string',
                 'second_last_name' => 'nullable|string',
-                'id_person' => 'required|numeric|exists:users,id_person|unique:persons,id_person',
-                'id_user' => 'required|numeric|exists:users,id_user|unique:persons,id_user',
+                'document' => 'required|numeric|exists:users,document|unique:persons,document',
                 'email' => 'required|string|exists:users,email|unique:persons,email',
                 'password' => 'required|string',
                 'is_eplanner' => 'required|boolean',
@@ -76,7 +75,7 @@ class PersonController extends Controller {
 
         // Se agrega la validación
         $validator = Validator::make($request->all(), [
-            'id_person' => 'required|exists:persons,id_person'
+            'document' => 'required|exists:persons,document'
         ]);
 
         if ($validator->fails()) {

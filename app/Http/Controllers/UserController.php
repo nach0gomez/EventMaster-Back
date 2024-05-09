@@ -65,7 +65,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
             $validator = Validator::make($request->all(),[
-                'id_person' => 'required|numeric|unique:users,id_person',
+                'document' => 'required|numeric|unique:users,document',
                 'username' => 'required|string|max:225|unique:users,username',
                 'password' => 'required|string|min:6',
                            ]);
@@ -101,7 +101,7 @@ class UserController extends Controller
                 $user->id_user = $request->id_user;
                 $user->email = $request->email;
                 $user->username = $request->username;
-                $user->id_person = $request->id_person;
+                $user->document = $request->document;
                 $user->password = Hash::make($request->password);
                 $user->status = true;
                 // Guardamos el cambio en nuestro modelo
