@@ -29,20 +29,20 @@ class PersonController extends Controller {
 
     public function index_id(Request $request){
         $person = new Person;
-        $id_person = $request->only('id_person');
-        $person = Person::findOrFail($id_person);
-        //$person = Person::join('users', 'persons.id_person', '=', 'users.id_person')->select('persons.*')->get();
+        $document = $request->only('document');
+        $person = Person::findOrFail($document);
         return $person;  
     }
 
     public function store(Request $request){
+
+
             $validator = Validator::make($request->all(),[
                 'first_name' => 'required|string',
                 'middle_name' => 'nullable|string',
                 'last_name' => 'required|string',
                 'second_last_name' => 'nullable|string',
-                'id_person' => 'required|numeric|exists:users,id_person|unique:persons,id_person',
-                'id_user' => 'required|numeric|exists:users,id_user|unique:persons,id_user',
+                'document' => 'required|numeric|exists:users,document|unique:persons,document',
                 'email' => 'required|string|exists:users,email|unique:persons,email',
                 'password' => 'required|string',
                 'is_eplanner' => 'required|boolean',
@@ -76,7 +76,7 @@ class PersonController extends Controller {
 
         // Se agrega la validación
         $validator = Validator::make($request->all(), [
-            'id_person' => 'required|exists:persons,id_person'
+            'document' => 'required|exists:persons,document'
         ]);
 
         if ($validator->fails()) {
@@ -91,8 +91,8 @@ class PersonController extends Controller {
       
         // Actualizar la contraseña del usuario
         
-        Person::where("id_person", $request->id_person)->update(['password'=>$hashedPassword]);
-        User::where("id_person", $request->id_person)->update(['password'=>$hashedPassword]);
+        Person::where("document", $request->document)->update(['password'=>$hashedPassword]);
+        User::where("document", $request->document)->update(['password'=>$hashedPassword]);
 
         //DB::commit();
 
@@ -112,8 +112,7 @@ class PersonController extends Controller {
                 'middle_name' => 'nullable|string',
                 'last_name' => 'required|string',
                 'second_last_name' => 'nullable|string',
-                'id_person' => 'required|numeric|exists:users,id_person|exists:persons,id_person',
-                'id_user' => 'required|numeric|exists:users,id_user|exists:persons,id_user',
+                'document' => 'required|numeric|exists:users,document|exists:persons,document',
                 'email' => 'required|string',
                 'username' => 'required|string',
                 'status' => 'required|boolean',
@@ -122,9 +121,9 @@ class PersonController extends Controller {
                 'is_eattendee' => 'required|boolean', 
                 ]);
                 if($validator->passes()){
-                Person::where("id_user", $request->id_user)->update($request->all());
-                User::where("id_user", $request->id_user)->update($request->
-                        only('email','id_person','username',"status"));
+                Person::where("document", $request->document)->update($request->all());
+                User::where("id_documentuser", $request->document)->update($request->
+                        only('email','document','username',"status"));
                 
                 return response()->json([
                     'res'=> true,
@@ -137,7 +136,8 @@ class PersonController extends Controller {
     }
 
     public function delete(Request $request){
-        Person::delete($request->id_person);
+        Person::where("document", $request->document)->update(["status"=> false]);
+        User::where("document", $request->document)->update(["status"=> false]);
         return response()->json([
             'res'=> true,
             'msg'=> 'Persona eliminada con exito'
