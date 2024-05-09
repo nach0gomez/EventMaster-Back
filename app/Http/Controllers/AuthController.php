@@ -24,6 +24,14 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
+        //validar si el usuario esta activo
+        $existsUser = User::where("email",$request->email)->get()->first();
+        if(!$existsUser->status){
+            return response()->json([
+                'res'=> false,
+                'msg'=> 'Usuario No Encontrado'
+            ],422);
+        }
 
         // Intentar autenticar al usuario
         $credentials = $request->only('email', 'password');

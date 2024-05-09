@@ -28,7 +28,7 @@ use App\Http\Controllers\AuthController;
     Route::get('test', 'TestController@test');
     Route::post('add_new_person', 'PersonController@store');
     Route::put('edit_person', 'PersonController@update');
-    Route::delete('delete_person', 'PersonController@delete');
+    Route::post('delete_person', 'PersonController@delete');
     Route::get('get_person', 'PersonController@index');
     Route::get('get_person_id', 'PersonController@index_id');
     Route::post('add_new_user', 'UserController@store');

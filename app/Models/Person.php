@@ -8,7 +8,7 @@ class Person extends Model
 {
     protected $table = 'persons';
     //nombre de la llave primaria
-    protected $primaryKey = 'id_person';
+    protected $primaryKey = 'document';
 
     //Datos que se Pueden llenar o modificar
     protected $fillable = [
@@ -21,8 +21,7 @@ class Person extends Model
             'is_eplanner', 
             'is_eattendee', 
             'status', 
-            'id_user', 
-            'id_person', 
+            'document', 
             'password', 
             'username'];
     protected $hidden = [

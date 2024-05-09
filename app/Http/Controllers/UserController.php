@@ -39,19 +39,15 @@ class UserController extends Controller
     public function index_id(Request $request)
     {
             $user = new User;
-            $id_user = $request->only('id');
-            $user = User::findOrFail($id_user);
-            //$users = User::join('persons', 'users.id_person', '=', 'persons.id_person')
-            //->select('users.*','persons.*')
-            //->where('users.id_user',$id_user)
-            //->get();
+            $document = $request->only('document');
+            $user = User::findOrFail($document);
             return $user;
         }
 
     /**
      * Método store
      * @authenticated
-     * @bodyParam id_person numeric required identidicador unico de existencia de usuario.
+     * @bodyParam document numeric required identidicador unico de existencia de usuario.
      * @bodyParam username string Nombre usuario 
      * @bodyParam password string required Contraseña del usuario
      * @bodyParam profiles array required
@@ -65,7 +61,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
             $validator = Validator::make($request->all(),[
-                'id_person' => 'required|numeric|unique:users,id_person',
+                'document' => 'required|numeric|unique:users,document',
                 'username' => 'required|string|max:225|unique:users,username',
                 'password' => 'required|string|min:6',
                            ]);
@@ -98,10 +94,9 @@ class UserController extends Controller
         }else{
                 $user = new User;
                 $user = User::findOrFail($id);
-                $user->id_user = $request->id_user;
                 $user->email = $request->email;
                 $user->username = $request->username;
-                $user->id_person = $request->id_person;
+                $user->document = $request->document;
                 $user->password = Hash::make($request->password);
                 $user->status = true;
                 // Guardamos el cambio en nuestro modelo
@@ -110,17 +105,14 @@ class UserController extends Controller
         }
     }
 
-    public function delete(Request $request)
-    {
-       
-            $user = new User;
-            $user = User::findOrFail($id);
-            $user->delete();
-            $person = new Person;
-            $person = Person::findOrFail($id);
-            $person->delete();
-            return response('No content', 204);
-        
+    public function delete(Request $request){
+        Person::where("document", $request->document)->update(["status"=> false]);
+        User::where("document", $request->document)->update(["status"=> false]);
+        return response()->json([
+            'res'=> true,
+            'msg'=> 'Persona eliminada con exito'
+        ],200); 
+            
     }
 
  /*cambio de contraseña*/
@@ -137,8 +129,8 @@ class UserController extends Controller
 
         // Se agrega la validación
         $validator = Validator::make($request->all(), [
-            'id_user' => 'required|exists:users,id_user',
-            'id_person' => 'required|exists:persons,id_person'
+            'document' => 'required|exists:users,document',
+            'document' => 'required|exists:persons,document'
         ]);
 
         if ($validator->fails()) {
@@ -156,8 +148,8 @@ class UserController extends Controller
       
         // Actualizar la contraseña del usuario
         
-        User::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
-        Person::where("id_user", $request->id_user)->update(['password'=>$hashedPassword]);
+        User::where("document", $request->document)->update(['password'=>$hashedPassword]);
+        Person::where("document", $request->document)->update(['password'=>$hashedPassword]);
 
         DB::commit();
 
