@@ -63,6 +63,7 @@ class UserController extends Controller
             $validator = Validator::make($request->all(),[
                 'document' => 'required|numeric|unique:users,document',
                 'username' => 'required|string|max:225|unique:users,username',
+                'email' => 'required|string|unique:persons,email',
                 'password' => 'required|string|min:6',
                            ]);
             if ($validator->passes()){
@@ -130,7 +131,6 @@ class UserController extends Controller
         // Se agrega la validación
         $validator = Validator::make($request->all(), [
             'document' => 'required|exists:users,document',
-            'document' => 'required|exists:persons,document'
         ]);
 
         if ($validator->fails()) {
