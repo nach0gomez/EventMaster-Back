@@ -16,16 +16,16 @@ class CreatePersonsTable extends Migration
         Schema::create('persons', function (Blueprint $table) {
             $table->bigIncrements('id_person');
             $table->string('email')->unique();
-            $table->string('password')->unique();
-            $table->string('is_admin')->unique();
-            $table->string('is_eplanner')->unique();
-            $table->string('is_eattendee')->unique();
+            $table->string('password');
+            $table->boolean('is_admin')->nullable();
+            $table->boolean('is_eplanner')->nullable();
+            $table->boolean('is_eattendee')->nullable();
             $table->string('first_name');
             $table->string('middle_name')->nullable();
             $table->string('last_name');
             $table->string('second_last_name')->nullable();
-            $table->string('username');
-            $table->bigInteger('document');
+            $table->string('username')->unique();
+            $table->bigInteger('document')->unique();
             $table->boolean('status');
             $table->timestamps();
         });

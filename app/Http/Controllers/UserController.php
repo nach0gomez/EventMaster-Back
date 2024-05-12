@@ -9,6 +9,8 @@ use JWTAuth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Person;
+use Exception;
+
 //use Mail;
 //use Mail\Create_User_Mail;
 //use Mail\NotificateRecuperacionContraseña;
@@ -63,11 +65,17 @@ class UserController extends Controller
             $validator = Validator::make($request->all(),[
                 'document' => 'required|numeric|unique:users,document',
                 'username' => 'required|string|max:225|unique:users,username',
+                'email' => 'required|string|unique:persons,email',
                 'password' => 'required|string|min:6',
                            ]);
+                        
+            dd($validator->errors());
             if ($validator->passes()){
+
+
+
                 //DB::beginTransaction();
-                //try {
+                try {
                 User::create($request->all());
                 return response()->json([
                     'res'=> true,
@@ -75,13 +83,14 @@ class UserController extends Controller
 
                 ]);
                 //DB::commit();
-                //}catch (\Exception $e) {
-                //    DB::rollback();
-                //    return response()->json('Ha ocurrido un error inesperado', 422);
-                //}
+                }catch (Exception $e) {
+                    // DB::rollback();
+                    return response()->json(['error' => $e->getMessage()], 422);
+                }
 
             } if($validator->fails()) {
-                return response()->json($validator->errors()->all(), 422);
+                return response()->json(['error' => 'Error inesperado'], 422);
+                
 
             } 
             
@@ -130,7 +139,6 @@ class UserController extends Controller
         // Se agrega la validación
         $validator = Validator::make($request->all(), [
             'document' => 'required|exists:users,document',
-            'document' => 'required|exists:persons,document'
         ]);
 
         if ($validator->fails()) {
