@@ -25,13 +25,13 @@ class PersonController extends Controller
      * @authenticated
      * @responseFile responses/Persons/PersonsIndex.json
      */
-    public function index()
+    public function getAllPersons()
     {
 
         return Person::all();
     }
 
-    public function index_id(Request $request)
+    public function getPersonById(Request $request)
     {
         $person = new Person;
         $document = $request->only('document');
@@ -39,9 +39,8 @@ class PersonController extends Controller
         return $person;
     }
 
-    public function store(Request $request)
+    public function addNewPerson(Request $request)
     {
-
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string',
@@ -114,7 +113,7 @@ class PersonController extends Controller
         //    return response()->json(['error' => $e->getMessage()], 422);
     }
 
-    public function update(Request $request)
+    public function editPerson(Request $request)
     {
 
         $validator = Validator::make($request->all(), [
@@ -144,7 +143,7 @@ class PersonController extends Controller
         }
     }
 
-    public function delete(Request $request)
+    public function deletePerson(Request $request)
     {
         Person::where("document", $request->document)->update(["status" => false]);
         User::where("document", $request->document)->update(["status" => false]);

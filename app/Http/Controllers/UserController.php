@@ -31,20 +31,20 @@ class UserController extends Controller
      * @authenticated
      * @responseFile responses/Users/UsersIndex.json
      *
-    */
-    public function index()
+     */
+    public function getAllUsers()
     {
-        
-           return User::all();
-        }
 
-    public function index_id(Request $request)
+        return User::all();
+    }
+
+    public function getUserById(Request $request)
     {
-            $user = new User;
-            $document = $request->only('document');
-            $user = User::findOrFail($document);
-            return $user;
-        }
+        $user = new User;
+        $document = $request->only('document');
+        $user = User::findOrFail($document);
+        return $user;
+    }
 
     /**
      * Método store
@@ -59,82 +59,79 @@ class UserController extends Controller
      * @responseFile 402 responses/ErrorGeneral/ErrorGeneral2.json
      * @responseFile 403 responses/ErrorGeneral/ErrorGeneral3.json
      * @responseFile 404 responses/ErrorGeneral/ErrorGeneral4.json
-    */
-    public function store(Request $request)
+     */
+    public function addNewUser(Request $request)
     {
-            $validator = Validator::make($request->all(),[
-                'document' => 'required|numeric|unique:users,document',
-                'username' => 'required|string|max:225|unique:users,username',
-                'email' => 'required|string|unique:persons,email',
-                'password' => 'required|string|min:6',
-                           ]);
-                        
-            dd($validator->errors());
-            if ($validator->passes()){
+        $validator = Validator::make($request->all(), [
+            'document' => 'required|numeric|unique:users,document',
+            'username' => 'required|string|max:225|unique:users,username',
+            'email' => 'required|string|unique:persons,email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->passes()) {
 
 
 
-                //DB::beginTransaction();
-                try {
+            //DB::beginTransaction();
+            try {
                 User::create($request->all());
                 return response()->json([
-                    'res'=> true,
-                    'msg'=> 'Usuario creado con exito'
+                    'res' => true,
+                    'msg' => 'Usuario creado con exito'
 
                 ]);
                 //DB::commit();
-                }catch (Exception $e) {
-                    // DB::rollback();
-                    return response()->json(['error' => $e->getMessage()], 422);
-                }
-
-            } if($validator->fails()) {
-                return response()->json(['error' => 'Error inesperado'], 422);
-                
-
-            } 
-            
-    }
-
-    public function update(Request $request, $id)
-    {
-        if($id != $request->id_user){
-            return response()->json(['errors'=>array(['code'=>401,'message'=>'No se suministran los parámetros mínimos de búsqueda.'])],401);
-        }else{
-                $user = new User;
-                $user = User::findOrFail($id);
-                $user->email = $request->email;
-                $user->username = $request->username;
-                $user->document = $request->document;
-                $user->password = Hash::make($request->password);
-                $user->status = true;
-                // Guardamos el cambio en nuestro modelo
-                $user->save();
-            
+            } catch (Exception $e) {
+                // DB::rollback();
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+        }
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Error inesperado'], 422);
         }
     }
 
-    public function delete(Request $request){
-        Person::where("document", $request->document)->update(["status"=> false]);
-        User::where("document", $request->document)->update(["status"=> false]);
-        return response()->json([
-            'res'=> true,
-            'msg'=> 'Persona eliminada con exito'
-        ],200); 
-            
+    public function editUser(Request $request, $id)
+    {
+        if ($id != $request->id_user) {
+            return response()->json(['errors' => array(['code' => 401, 'message' => 'No se suministran los parámetros mínimos de búsqueda.'])], 401);
+        } else {
+            $user = new User;
+            $user = User::findOrFail($id);
+            $user->email = $request->email;
+            $user->username = $request->username;
+            $user->document = $request->document;
+            $user->password = Hash::make($request->password);
+            $user->status = true;
+            // Guardamos el cambio en nuestro modelo
+            $user->save();
+        }
     }
 
- /*cambio de contraseña*/
-    public function generateRandomPassword($length = 8) {
+    public function deleteUser(Request $request)
+    {
+        Person::where("document", $request->document)->update(["status" => false]);
+        User::where("document", $request->document)->update(["status" => false]);
+        return response()->json([
+            'res' => true,
+            'msg' => 'Persona eliminada con exito'
+        ], 200);
+    }
+
+    /*cambio de contraseña*/
+    public function generateRandomPassword($length = 8)
+    {
         $characters = '0123456789abcd';
         $randomString = '';
         for ($i = 0; $i < $length; $i++) {
-          $randomString .= $characters[rand(0, strlen($characters) - 1)];
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
         }
         return $randomString;
     }
 
-    public function updatePassword(Request $request) {
+    public function updatePassword(Request $request)
+    {
 
         // Se agrega la validación
         $validator = Validator::make($request->all(), [
@@ -144,31 +141,29 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors()->all(), 422);
         }
-       try {
+        try {
 
-        DB::beginTransaction();
-      
-        // Generar contraseña aleatoria
-        $newPassword = $this->generateRandomPassword();
-      
-        // Hashear la nueva contraseña
-        $hashedPassword = Hash::make($newPassword);
-      
-        // Actualizar la contraseña del usuario
-        
-        User::where("document", $request->document)->update(['password'=>$hashedPassword]);
-        Person::where("document", $request->document)->update(['password'=>$hashedPassword]);
+            DB::beginTransaction();
 
-        DB::commit();
+            // Generar contraseña aleatoria
+            $newPassword = $this->generateRandomPassword();
 
-      
-        return response()->json(['message' => 'la contraseña se actualizo con exito'], 200);
+            // Hashear la nueva contraseña
+            $hashedPassword = Hash::make($newPassword);
 
-       } catch (Exception $e) {
+            // Actualizar la contraseña del usuario
+
+            User::where("document", $request->document)->update(['password' => $hashedPassword]);
+            Person::where("document", $request->document)->update(['password' => $hashedPassword]);
+
+            DB::commit();
+
+
+            return response()->json(['message' => 'la contraseña se actualizo con exito'], 200);
+        } catch (Exception $e) {
 
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 422);
-       }
-      }
-    
+        }
+    }
 }
