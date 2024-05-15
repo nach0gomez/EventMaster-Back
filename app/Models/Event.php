@@ -19,7 +19,7 @@ class Event extends Model
         'location', 
         'duration', 
         'status',
-        'id_person',
+        'id_user',
         'restriction_minors_allowed', 
         'max_attendees'];
 }

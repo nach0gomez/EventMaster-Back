@@ -23,7 +23,7 @@ class CreateEvents extends Migration
             $table->bigInteger('duration');
             $table->bigInteger('max_attendees');
             $table->boolean('restriction_minors_allowed');
-            $table->bigInteger('id_person');
+            $table->bigInteger('id_user');
             $table->string('status');
             $table->timestamps();
         });

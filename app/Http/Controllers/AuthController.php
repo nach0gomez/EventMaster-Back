@@ -46,7 +46,8 @@ class AuthController extends Controller
         $token = $user->createToken('TokenName')->accessToken;
 
         // Retornar el token JWT en la respuesta
-        return response()->json(['token' => $token]);
+        return response()->json(['token' => $token,
+                                'user'=>$existsUser]);
     }
 
 

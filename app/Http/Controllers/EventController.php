@@ -46,7 +46,7 @@ class EventController extends Controller
             'location'=> 'required|string',
             'duration'=> 'required|numeric',
             'status'=> 'required|string',
-            'id_person' => 'required|numeric|exists:persons,id_person',
+            'id_user' => 'required|numeric|exists:users,id_user',
             'restriction_minors_allowed'=> 'required|boolean',
             'max_attendees' => 'required|numeric'
         ]);
@@ -55,7 +55,21 @@ class EventController extends Controller
 
             //DB::beginTransaction();
             try {
-                Event::create($request->all());
+                // es mejor para manejar cada dato, mandar los datos de la request uno por uno
+                $event = new Event;
+                $event->title = $request->title;
+                $event->description = $request->description;
+                $event->date = $request->date;
+                $event->time = $request->time;
+                $event->location = $request->location;
+                $event->duration = $request->duration;
+                $event->status = true; //por defecto guarda como true
+                $event->id_user = $request->id_user;
+                $event->restriction_minors_allowed = $request->restriction_minors_allowed;
+                $event->max_attendees = $request->max_attendees;
+                $event->save(); //guardamos en la bd
+
+
                 return response()->json([
                     'res' => true,
                     'msg' => 'Evento registrado con exito'
