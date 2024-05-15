@@ -26,7 +26,7 @@ use App\Http\Controllers\AuthController;
     Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@authenticate');
     Route::get('test', 'TestController@test');
-    Route::post('add_new_person', 'PersonController@addNewPerson');
+    Route::post('add_new_person', 'PersonController@addNewPerson'); //metodo principal de registro de nueva persona
     Route::put('edit_person', 'PersonController@editPerson');
     Route::post('delete_person', 'PersonController@deletePerson');
     Route::get('get_all_persons', 'PersonController@getAllPersons');

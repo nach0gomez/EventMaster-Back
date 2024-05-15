@@ -43,13 +43,14 @@ class PersonController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string',
-            'middle_name' => 'nullable|string',
-            'last_name' => 'required|string',
-            'second_last_name' => 'nullable|string',
-            'document' => 'required|numeric|exists:users,document|unique:persons,document',
-            'email' => 'required|string|exists:users,email|unique:persons,email',
-            'password' => 'required|string',
+            'first_name' => 'required|string|max:30',
+            'middle_name' => 'nullable|string|max:30',
+            'last_name' => 'required|string|max:30',
+            'second_last_name' => 'nullable|string|max:30',
+            'username' => 'required|string|max:25|unique:persons,username',
+            'document' => 'required|numeric|max:25|unique:persons,document',
+            'email' => 'required|string|max:50|exists:users,email|unique:persons,email',
+            'password' => 'required|string|max:40',
             'is_eplanner' => 'required|boolean',
             'is_eattendee' => 'required|boolean',
         ]);
