@@ -17,9 +17,8 @@ class CreatePersonsTable extends Migration
             $table->bigIncrements('id_person');
             $table->string('email')->unique();
             $table->string('password');
-            $table->boolean('is_admin')->nullable();
-            $table->boolean('is_eplanner')->nullable();
-            $table->boolean('is_eattendee')->nullable();
+            $table->boolean('is_eplanner');
+            $table->boolean('is_eattendee');
             $table->string('first_name');
             $table->string('middle_name')->nullable();
             $table->string('last_name');
