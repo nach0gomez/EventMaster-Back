@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
+use App\Models\Person;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -24,19 +25,18 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
+
         //validar si el usuario esta activo
-        $existsUser = User::where("email",$request->email)->get()->first();
-        if(!$existsUser->status){
-            return response()->json([
-                'res'=> false,
-                'msg'=> 'Usuario No Encontrado'
-            ],422);
+        $existsUser = User::where("email",$request->email)->where("status",true)->get()->first();
+
+        if(!$existsUser){
+            return response()->json(['error' => 'Usuario no encontrado'], 401);
         }
 
         // Intentar autenticar al usuario
         $credentials = $request->only('email', 'password');
         if (!Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Credenciales inválidas'], 401);
+            return response()->json(['error' => 'Credenciales invalidas'], 401);
         }
 
         // Si las credenciales son válidas, obtener el usuario
@@ -48,6 +48,7 @@ class AuthController extends Controller
         // Retornar el token JWT en la respuesta
         return response()->json(['token' => $token]);
     }
+
 
 
     public function register(Request $request)

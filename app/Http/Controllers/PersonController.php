@@ -48,8 +48,8 @@ class PersonController extends Controller
             'last_name' => 'required|string|max:30',
             'second_last_name' => 'nullable|string|max:30',
             'username' => 'required|string|max:25|unique:persons,username',
-            'document' => 'required|numeric|max:25|unique:persons,document',
-            'email' => 'required|string|max:50|exists:users,email|unique:persons,email',
+            'document' => 'required|numeric|unique:persons,document',
+            'email' => 'required|string|max:70|unique:persons,email',
             'password' => 'required|string|max:40',
             'is_eplanner' => 'required|boolean',
             'is_eattendee' => 'required|boolean',
@@ -59,19 +59,30 @@ class PersonController extends Controller
 
             //DB::beginTransaction();
             try {
-                Person::create($request->all());
-                $this->Password($request);
+                $person = new Person;
+                $person->first_name = $request->first_name;
+                $person->middle_name = $request->middle_name;
+                $person->last_name = $request->last_name;
+                $person->second_last_name = $request->second_last_name;
+                $person->username = $request->username;
+                $person->document = $request->document;
+                $person->email = $request->email;
+                $person->password = Hash::make($request->password);
+                $person->is_eplanner = $request->is_eplanner;
+                $person->is_eattendee = $request->is_eattendee;
+                $person->status = true;
+                $person->save();
+
                 return response()->json([
-                    'res' => true,
                     'msg' => 'Persona creada con exito'
-                ]);
+                ], 200);
                 //    DB::commit();
             } catch (Exception $e) {
                 //DB::rollback();
                 return response()->json([
                     'res' => false,
                     'msg' => $e->getMessage()
-                ]);
+                ], 422);
             }
         }
         if ($validator->fails()) {
@@ -91,27 +102,26 @@ class PersonController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors()->all(), 422);
         }
-        //try {
+        try {
 
-        //DB::beginTransaction();
+            //DB::beginTransaction();
 
-        // Hashear la contraseña
-        $hashedPassword = Hash::make($request->password);
+            // Hashear la contraseña
+            $hashedPassword = Hash::make($request->password);
 
-        // Actualizar la contraseña del usuario
+            // Actualizar la contraseña del usuario
 
-        Person::where("document", $request->document)->update(['password' => $hashedPassword]);
-        User::where("document", $request->document)->update(['password' => $hashedPassword]);
+            Person::where("document", $request->document)->update(['password' => $hashedPassword]);
 
-        //DB::commit();
+            //DB::commit();
 
 
-        return response()->json(['res' => true], 200);
+            return response()->json(['res' => true], 200);
+        } catch (Exception $e) {
 
-        //} catch (Exception $e) {
-
-        //    DB::rollBack();
-        //    return response()->json(['error' => $e->getMessage()], 422);
+            //    DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 
     public function editPerson(Request $request)

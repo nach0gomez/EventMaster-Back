@@ -23,15 +23,15 @@ use App\Http\Controllers\AuthController;
         return $request->user();
     });
 
-    Route::post('register', 'AuthController@register');
-    Route::post('login', 'AuthController@authenticate');
+    Route::post('register', 'AuthController@register');   
+    Route::post('login', 'AuthController@authenticate');  //metodo de login
     Route::get('test', 'TestController@test');
-    Route::post('add_new_person', 'PersonController@addNewPerson'); //metodo principal de registro de nueva persona
+    Route::post('add_new_person', 'PersonController@addNewPerson'); 
     Route::put('edit_person', 'PersonController@editPerson');
     Route::post('delete_person', 'PersonController@deletePerson');
     Route::get('get_all_persons', 'PersonController@getAllPersons');
     Route::get('get_person_by_id', 'PersonController@getPersonById');
-    Route::post('add_new_user', 'UserController@addNewUser');
+    Route::post('add_new_user', 'UserController@addNewUser'); //metodo principal de registro de un usuario
     Route::put('edit_user', 'UserController@editUser');
     Route::delete('delete_user', 'UserController@deleteUser');
     Route::get('get_all_users', 'UserController@getAllUsers');
