@@ -34,8 +34,7 @@ class PersonController extends Controller
     public function getPersonById(Request $request)
     {
         $person = new Person;
-        $document = $request->only('document');
-        $person = Person::findOrFail($document);
+        $person = Person::where("email", $request->email)->get()->first();
         return $person;
     }
 
