@@ -68,8 +68,6 @@ class UserController extends Controller
                 'email' => 'required|string|unique:persons,email',
                 'password' => 'required|string|min:6',
                            ]);
-                        
-            dd($validator->errors());
             if ($validator->passes()){
 
 

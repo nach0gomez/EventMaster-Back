@@ -31,11 +31,10 @@ class PersonController extends Controller
         return Person::all();
     }
 
-    public function index_id(Request $request)
+    public function index_email(Request $request)
     {
         $person = new Person;
-        $document = $request->only('document');
-        $person = Person::findOrFail($document);
+        $person = Person::where("email", $request->email)->get()->first();
         return $person;
     }
 
