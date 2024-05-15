@@ -24,25 +24,17 @@ use App\Http\Controllers\EventController;
         return $request->user();
     });
 
-    Route::post('register', 'AuthController@register');
-    Route::post('login', 'AuthController@authenticate');
+    Route::post('register', 'AuthController@register');   
+    Route::post('login', 'AuthController@authenticate');  //metodo de login
     Route::get('test', 'TestController@test');
-    //person
-    Route::post('add_new_person', 'PersonController@store');
-    Route::put('edit_person', 'PersonController@update');
-    Route::post('delete_person', 'PersonController@delete');
-    Route::get('get_person', 'PersonController@index');
-    Route::get('get_person_email', 'PersonController@index_email');
-    //user
-    Route::post('add_new_user', 'UserController@store');
-    Route::put('edit_user', 'UserController@update');
-    Route::delete('delete_user', 'UserController@delete');
-    Route::get('get_user', 'UserController@index');
-    Route::get('get_user_id', 'UserController@index_id');
-    //event
-    Route::post('add_new_event', 'EventController@store');
-    Route::put('edit_event', 'EventController@update');
-    Route::delete('delete_event', 'EventController@delete');
-    Route::get('get_event', 'EventController@index');
-    Route::get('get_event_id', 'EventController@index_id');
+    Route::post('add_new_person', 'PersonController@addNewPerson'); 
+    Route::put('edit_person', 'PersonController@editPerson');
+    Route::post('delete_person', 'PersonController@deletePerson');
+    Route::get('get_all_persons', 'PersonController@getAllPersons');
+    Route::get('get_person_by_id', 'PersonController@getPersonById');
+    Route::post('add_new_user', 'UserController@addNewUser'); //metodo principal de registro de un usuario
+    Route::put('edit_user', 'UserController@editUser');
+    Route::delete('delete_user', 'UserController@deleteUser');
+    Route::get('get_all_users', 'UserController@getAllUsers');
+    Route::get('get_user_by_id', 'UserController@getUserById');
 
