@@ -35,7 +35,7 @@ class EventController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function addNewEvent(Request $request)
     {
         $validator = Validator::make($request->all(), [
 
@@ -89,27 +89,25 @@ class EventController extends Controller
     }
     
 
+    public function getAllEvents()
+    {
+        //retornamos todos los eventos suponeindo que el estado activado es 1
+        return Event::all()->where('status', 1);
+    }
+
     /**
      * Display the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function getEventById($id)
     {
         //
+
+        return true;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -118,7 +116,7 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function editEvent(Request $request, $id)
     {
         //
     }
@@ -129,7 +127,7 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function deleteEvent($id)
     {
         //
     }

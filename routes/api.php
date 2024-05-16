@@ -40,10 +40,10 @@ use App\Http\Controllers\EventController;
     Route::get('get_all_users', 'UserController@getAllUsers');
     Route::get('get_user_by_id', 'UserController@getUserById');
     //event
-    Route::post('add_new_event', 'EventController@store');
-    Route::put('edit_event', 'EventController@update');
-    Route::delete('delete_event', 'EventController@delete');
-    Route::get('get_event', 'EventController@index');
-    Route::get('get_event_id', 'EventController@index_id');
+    Route::post('add_new_event', 'EventController@addNewEvent');
+    Route::put('edit_event', 'EventController@editEvent');
+    Route::delete('delete_event', 'EventController@deleteEvent');
+    Route::get('get_all_events', 'EventController@getAllEvents');
+    Route::get('get_event_by_id', 'EventController@getEventById');
 
 
