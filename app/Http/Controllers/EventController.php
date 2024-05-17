@@ -89,6 +89,7 @@ class EventController extends Controller
     }
     
 
+    
     public function getAllEvents()
     {
         //retornamos todos los eventos suponeindo que el estado activado es 1
