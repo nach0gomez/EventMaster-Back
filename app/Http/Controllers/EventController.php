@@ -97,16 +97,25 @@ class EventController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified event depending on the ID provided.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function getEventById($id)
+    public function getEventById(Request $request)
     {
-        //
+        try {
+            $event = new Event;
+            $id_event = $request->only('id_event');
+            $event = Event::findOrFail($id_event);
+            return $event;
+        } catch (Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => $e->getMessage()
+            ]);
+        }
 
-        return true;
     }
 
 
