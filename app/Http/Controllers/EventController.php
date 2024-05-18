@@ -46,6 +46,7 @@ class EventController extends Controller
             'location'=> 'required|string',
             'duration'=> 'required|numeric',
             'status'=> 'required|string',
+            'event_type'=> 'required|string',
             'id_user' => 'required|numeric|exists:users,id_user',
             'restriction_minors_allowed'=> 'required|boolean',
             'max_attendees' => 'required|numeric'
@@ -65,6 +66,7 @@ class EventController extends Controller
                 $event->duration = $request->duration;
                 $event->status = true; //por defecto guarda como true
                 $event->id_user = $request->id_user;
+                $event->event_type = $request->event_type;
                 $event->restriction_minors_allowed = $request->restriction_minors_allowed;
                 $event->max_attendees = $request->max_attendees;
                 $event->save(); //guardamos en la bd
