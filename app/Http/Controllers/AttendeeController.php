@@ -13,12 +13,12 @@ class AttendeeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getAllAttendees()
     {
         return Attendee::all();
     }
 
-    public function indexId(Request $request)
+    public function getAttendeeById(Request $request)
     {
         $attendee = new Attendee;
         $id_attendee = $request->only('id_attendee');
@@ -27,22 +27,12 @@ class AttendeeController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function addNewAttendee(Request $request)
     {
         
         $validator = Validator::make($request->all(), [
@@ -73,17 +63,7 @@ class AttendeeController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
+    
     /**
      * Update the specified resource in storage.
      *
@@ -91,7 +71,7 @@ class AttendeeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function editAttendee(Request $request, $id)
     {
         //
     }
@@ -102,7 +82,7 @@ class AttendeeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function deleteAttendee(Request $request)
     {
         $attendee = new Attendee;
         $id_attendee = $request->only('id_attendee');

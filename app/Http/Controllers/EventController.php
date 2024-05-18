@@ -16,12 +16,12 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getAllEvents()
     {
         return Event::all();
     }
 
-    public function index_id(Request $request)
+    public function getEventById(Request $request)
     {
         $event = new Event;
         $id_event = $request->only('id_event');
@@ -35,7 +35,7 @@ class EventController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function addNewEvent(Request $request)
     {
         $validator = Validator::make($request->all(), [
 
@@ -108,7 +108,7 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function editEvent($id)
     {
         //
     }
@@ -131,7 +131,7 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function deleteEvent($id)
     {
         //
     }
