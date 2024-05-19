@@ -49,7 +49,7 @@ use App\Http\Controllers\EventController;
     Route::post('add_new_attendee', 'AttendeeController@addNewAttendee');
     Route::put('edit_attendee', 'AttendeeController@editAttendee');
     Route::delete('delete_attendee', 'AttendeeController@deleteAttendee');
-    Route::get('get_attendees', 'AttendeeController@getAllAttendees');
-    Router::get('get_attendee_by_id', 'AttendeeController@getAttendeeById');
+    Route::get('get_all_attendees', 'AttendeeController@getAllAttendees');
+    Route::get('get_attendee_by_id', 'AttendeeController@getAttendeeById');
 
 
