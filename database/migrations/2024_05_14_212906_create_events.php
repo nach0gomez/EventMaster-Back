@@ -17,6 +17,7 @@ class CreateEvents extends Migration
             $table->bigIncrements('id_event');
             $table->string('title');
             $table->string('description');
+            $table->string('event_type');
             $table->string('date');
             $table->string('time');
             $table->string('location');

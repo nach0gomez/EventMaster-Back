@@ -16,12 +16,12 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getAllEvents()
     {
         return Event::all();
     }
 
-    public function index_id(Request $request)
+    public function getEventById(Request $request)
     {
         $event = new Event;
         $id_event = $request->only('id_event');
@@ -46,6 +46,7 @@ class EventController extends Controller
             'location'=> 'required|string',
             'duration'=> 'required|numeric',
             'status'=> 'required|string',
+            'event_type'=> 'required|string',
             'id_user' => 'required|numeric|exists:users,id_user',
             'restriction_minors_allowed'=> 'required|boolean',
             'max_attendees' => 'required|numeric'
@@ -65,6 +66,7 @@ class EventController extends Controller
                 $event->duration = $request->duration;
                 $event->status = true; //por defecto guarda como true
                 $event->id_user = $request->id_user;
+                $event->event_type = $request->event_type;
                 $event->restriction_minors_allowed = $request->restriction_minors_allowed;
                 $event->max_attendees = $request->max_attendees;
                 $event->save(); //guardamos en la bd
@@ -97,16 +99,25 @@ class EventController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified event depending on the ID provided.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function getEventById($id)
+    public function getEventById(Request $request)
     {
-        //
+        try {
+            $event = new Event;
+            $id_event = $request->only('id_event');
+            $event = Event::findOrFail($id_event);
+            return $event;
+        } catch (Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => $e->getMessage()
+            ]);
+        }
 
-        return true;
     }
 
 
