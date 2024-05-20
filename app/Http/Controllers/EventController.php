@@ -11,23 +11,7 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getAllEvents()
-    {
-        return Event::all();
-    }
 
-    public function getEventById(Request $request)
-    {
-        $event = new Event;
-        $id_event = $request->only('id_event');
-        $event = Event::findOrFail($id_event);
-        return $event;
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -110,7 +94,10 @@ class EventController extends Controller
             $event = new Event;
             $id_event = $request->only('id_event');
             $event = Event::findOrFail($id_event);
-            return $event;
+            return response()->json([
+                'res' => 'true',
+                'data' => $event
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'res' => false,
