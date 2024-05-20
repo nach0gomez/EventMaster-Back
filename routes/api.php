@@ -36,7 +36,7 @@ use App\Http\Controllers\EventController;
     //user
     Route::post('add_new_user', 'UserController@addNewUser'); //metodo principal de registro de un usuario
     Route::put('edit_user', 'UserController@editUser');
-    Route::delete('delete_user', 'UserController@deleteUser');
+    Route::post('delete_user', 'UserController@deleteUser');
     Route::get('get_all_users', 'UserController@getAllUsers');
     Route::get('get_user_by_id', 'UserController@getUserById');
     //event
