@@ -84,7 +84,7 @@ class EventController extends Controller
 
     /**
      * Display the specified event depending on the ID provided.
-     *
+     * 
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
