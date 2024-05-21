@@ -11,7 +11,7 @@ class Event extends Model
     protected $primaryKey = 'id_event';
      //Datos que se Pueden llenar o modificar
      protected $fillable = [
-        'id_event', 
+        'id_event',
         'title', 
         'description', 
         'date', 
@@ -20,6 +20,8 @@ class Event extends Model
         'duration', 
         'status',
         'id_user',
+        'event_type',
         'restriction_minors_allowed', 
-        'max_attendees'];
+        'max_attendees'
+        ];
 }
