@@ -40,10 +40,14 @@ class UserController extends Controller
 
     public function getUserById(Request $request)
     {
-        $user = new User;
-        $document = $request->only('document');
-        $user = User::findOrFail($document);
-        return $user;
+        try {
+            $user = new User;
+            $document = $request->only('id_user');
+            $user = User::findOrFail($document);
+            return response()->json(['data' => $user], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 
     /**
@@ -62,57 +66,57 @@ class UserController extends Controller
      */
     public function addNewUser(Request $request)
     {
-    $validator = Validator::make($request->all(), [
-        'first_name' => 'required|string|max:30',
-        'middle_name' => 'nullable|string|max:30',
-        'last_name' => 'required|string|max:30',
-        'second_last_name' => 'nullable|string|max:30',
-        'username' => 'required|string|max:25|unique:users,username',
-        'document' => 'required|numeric|unique:users,document',
-        'email' => 'required|string|max:50|unique:users,email',
-        'password' => 'required|string|max:20',
-        'is_eplanner' => 'required|boolean',
-        'is_eattendee' => 'required|boolean',
-    ], [
-        'username.unique' => 'El nombre de usuario ya esta en uso.',
-        'document.unique' => 'El documento ya esta registrado en nuestra base de datos.',
-        'email.unique' => 'El correo electronico ya esta registrado en nuestra base de datos.',
-    ]);
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:30',
+            'middle_name' => 'nullable|string|max:30',
+            'last_name' => 'required|string|max:30',
+            'second_last_name' => 'nullable|string|max:30',
+            'username' => 'required|string|max:25|unique:users,username',
+            'document' => 'required|numeric|unique:users,document',
+            'email' => 'required|string|max:50|unique:users,email',
+            'password' => 'required|string|max:20',
+            'is_eplanner' => 'required|boolean',
+            'is_eattendee' => 'required|boolean',
+        ], [
+            'username.unique' => 'El nombre de usuario ya esta en uso.',
+            'document.unique' => 'El documento ya esta registrado en nuestra base de datos.',
+            'email.unique' => 'El correo electronico ya esta registrado en nuestra base de datos.',
+        ]);
 
-    if ($validator->passes()) {
+        if ($validator->passes()) {
 
-        //DB::beginTransaction();
-        try {
-            $person = new User;
-            $person->first_name = $request->first_name;
-            $person->middle_name = $request->middle_name;
-            $person->last_name = $request->last_name;
-            $person->second_last_name = $request->second_last_name;
-            $person->username = $request->username;
-            $person->document = $request->document;
-            $person->email = $request->email;
-            $person->password = Hash::make($request->password);
-            $person->is_eplanner = $request->is_eplanner;
-            $person->is_eattendee = $request->is_eattendee;
-            $person->status = true;
-            $person->save();
+            //DB::beginTransaction();
+            try {
+                $person = new User;
+                $person->first_name = $request->first_name;
+                $person->middle_name = $request->middle_name;
+                $person->last_name = $request->last_name;
+                $person->second_last_name = $request->second_last_name;
+                $person->username = $request->username;
+                $person->document = $request->document;
+                $person->email = $request->email;
+                $person->password = Hash::make($request->password);
+                $person->is_eplanner = $request->is_eplanner;
+                $person->is_eattendee = $request->is_eattendee;
+                $person->status = true;
+                $person->save();
 
-            return response()->json([
-                'msg' => 'Persona creada con exito'
-            ], 200);
-            //    DB::commit();
-        } catch (Exception $e) {
-            //DB::rollback();
-            return response()->json([
-                'res' => false,
-                'msg' => $e->getMessage()
-            ], 422);
+                return response()->json([
+                    'msg' => 'Persona creada con exito'
+                ], 200);
+                //    DB::commit();
+            } catch (Exception $e) {
+                //DB::rollback();
+                return response()->json([
+                    'res' => false,
+                    'msg' => $e->getMessage()
+                ], 422);
+            }
+        }
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->all(), 422);
         }
     }
-    if ($validator->fails()) {
-        return response()->json($validator->errors()->all(), 422);
-    }
-}
 
 
     public function editUser(Request $request, $id)

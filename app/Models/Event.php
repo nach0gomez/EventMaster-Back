@@ -22,6 +22,11 @@ class Event extends Model
         'id_user',
         'event_type',
         'restriction_minors_allowed', 
-        'max_attendees'
-        ];
+        'max_attendees'];
+
+
+    public function attendees()
+    {
+        return $this->belongsToMany(User::class, 'attendees', 'id_event', 'id_user');
+    }
 }

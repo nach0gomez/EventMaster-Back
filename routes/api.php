@@ -45,11 +45,14 @@ use App\Http\Controllers\EventController;
     Route::delete('delete_event', 'EventController@deleteEvent');
     Route::get('get_all_events', 'EventController@getAllEvents');
     Route::get('get_event_by_id', 'EventController@getEventById');
+    Route::get('get_event_with_attendees', 'EventController@getEventWithAttendees');
     //attendee
     Route::post('add_new_attendee', 'AttendeeController@addNewAttendee');
     Route::put('edit_attendee', 'AttendeeController@editAttendee');
     Route::delete('delete_attendee', 'AttendeeController@deleteAttendee');
     Route::get('get_all_attendees', 'AttendeeController@getAllAttendees');
     Route::get('get_attendee_by_id', 'AttendeeController@getAttendeeById');
+    Route::get('get_attendees_by_event_id', 'AttendeeController@getAttendeesByEventId');
+    Route::get('delete_attendee', 'AttendeeController@deleteAttendee');
 
 
