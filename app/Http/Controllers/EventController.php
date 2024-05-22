@@ -129,9 +129,60 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function editEvent(Request $request, $id)
+    public function editEvent(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            
+            'id_event' => 'required|numeric|exists:events,id_event',
+            'title'=> 'required|string',
+            'description'=> 'required|string',
+            'date'=> 'required|string',
+            'time'=> 'required|string',
+            'location'=> 'required|string',
+            'duration'=> 'required|numeric',
+            'status'=> 'required|string',
+            'event_type'=> 'required|string',
+            'id_user' => 'required|numeric|exists:users,id_user',
+            'restriction_minors_allowed'=> 'required|boolean',
+            'max_attendees' => 'required|numeric'
+        ]);
+
+        if ($validator->passes()) {
+
+            //DB::beginTransaction();
+            try {
+                // es mejor para manejar cada dato, mandar los datos de la request uno por uno
+                $event = Event::findOrFail($request->id_event);
+                $event->title = $request->title;
+                $event->description = $request->description;
+                $event->date = $request->date;
+                $event->time = $request->time;
+                $event->location = $request->location;
+                $event->duration = $request->duration;
+                $event->status = true; //por defecto guarda como true
+                $event->id_user = $request->id_user;
+                $event->event_type = $request->event_type;
+                $event->restriction_minors_allowed = $request->restriction_minors_allowed;
+                $event->max_attendees = $request->max_attendees;
+                $event->save(); //guardamos en la bd
+
+
+                return response()->json([
+                    'res' => true,
+                    'msg' => 'Evento actualizado con exito'
+                ]);
+                //    DB::commit();
+            } catch (Exception $e) {
+                //DB::rollback();
+                return response()->json([
+                    'res' => false,
+                    'msg' => $e->getMessage(), 422
+                ]);
+            }
+        }
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->all(), 422);
+        }
     }
 
     /**
