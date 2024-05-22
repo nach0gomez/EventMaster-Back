@@ -107,6 +107,84 @@ class EventController extends Controller
 
     }
 
+    public function getEventsFilter(Request $request)
+    {
+        try {
+            $query = Event::query();
+    
+            // Filtrar por tipo de evento si se proporciona
+            if ($request->has('event_type') && $request->event_type != null) {//si tiene categoria
+                if ($request->has('date') && $request->date != null) {//si tine fecha
+                    if ($request->has('title') && $request->title != null) {//si tiene titulo
+                        $query->where([
+                            'title' => 'ILIKE ?',
+                            'date' => '=',
+                            'event_type' => '=',
+                        ], [
+                            '%' . $request->title . '%', // Agregar comodines para coincidencia parcial del título
+                            $request->date,
+                            $request->event_type,
+                        ]);
+                        dd($query->toSql());
+                        dd($query->get());
+                    }//si no tiene titulo pero si categoria y fecha
+                    $query->where([
+                        'date' => $request->date, //trae donde la fecha sea igual
+                        'event_type' => $request->event_type, //trae donde la categoria de evento sea igual
+                    ]);
+                    dd($query->get());
+                }//si tiene categoria pero no fecha
+                if ($request->has('title') && $request->title != null) {//si tiene titulo y categoria
+                    $query->where([
+                        'title' => '%' . $request->title . '%',//trae donde el titulo sea igual
+                        'event_type' => $request->event_type, //trae donde la categoria de evento sea igual
+                    ]);
+                }//si no tiene titulo ni fecha, pero si categoria
+                $query->where('event_type', $request->event_type);
+            }
+            
+            //si no tiene categoria
+
+            if ($request->has('date') && $request->date != null) {//si tiene fecha
+                if ($request->has('title') && $request->title != null) {//si tiene titulo
+                    $query->where([
+                        'title' => '%' . $request->title . '%',//trae donde el titulo sea igual
+                        'date' => $request->date, //trae donde la fecha sea igual
+                    ]);
+                }//si no tiene titulo ni categoria pero si fecha
+                $query->where('date', $request->date);
+            }
+            //si no tiene categoria ni fecha
+            if ($request->has('title') && $request->title != null) {//si tiene titulo
+                $query->where('title', 'like', '%' . $request->title . '%');
+            }//si no tiene nada
+            if (!$request->has('event_type') && !$request->has('date') && !$request->has('title')) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'No se proporcionaron filtros para la consulta'
+                ]);
+            }
+            // Obtener los resultados de la consulta
+            $events = $query->get();
+    
+            if ($events->isEmpty()) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => 'No se encontraron eventos con esas características'
+                ]);
+            }
+    
+            return response()->json([
+                'res' => 'true',
+                'data' => $events
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
 
     /**
      * Update the specified resource in storage.
