@@ -33,4 +33,10 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'attendees', 'id_user', 'id_event');
+    }
+
 }

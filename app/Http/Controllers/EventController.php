@@ -65,8 +65,8 @@ class EventController extends Controller
                 //DB::rollback();
                 return response()->json([
                     'res' => false,
-                    'msg' => $e->getMessage(), 422
-                ]);
+                    'msg' => $e->getMessage()
+                ], 422);
             }
         }
         if ($validator->fails()) {
@@ -74,7 +74,21 @@ class EventController extends Controller
         }
     }
     
-
+    public function getEventWithAttendees(Request $request)
+    {
+        try {
+            $event = Event::with('attendees')->find($request->id_event);
+            return response()->json([
+                'res' => 'true',
+                'data' => $event
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'res' => false,
+                'msg' => $e->getMessage()
+            ]);
+        }
+    }
     
     public function getAllEvents()
     {
