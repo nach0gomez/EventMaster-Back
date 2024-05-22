@@ -53,5 +53,6 @@ use App\Http\Controllers\EventController;
     Route::get('get_all_attendees', 'AttendeeController@getAllAttendees');
     Route::get('get_attendee_by_id', 'AttendeeController@getAttendeeById');
     Route::get('get_attendees_by_event_id', 'AttendeeController@getAttendeesByEventId');
+    Route::get('delete_attendee', 'AttendeeController@deleteAttendee');
 
 
