@@ -46,6 +46,7 @@ use App\Http\Controllers\EventController;
     Route::get('get_all_events', 'EventController@getAllEvents');
     Route::get('get_event_by_id', 'EventController@getEventById');
     Route::get('get_events_filter', 'EventController@getEventsFilter');
+    Route::get('get_events_filter_by_user', 'EventController@getEventsFilterByUser');
     Route::get('get_event_with_attendees', 'EventController@getEventWithAttendees');
     //attendee
     Route::post('add_new_attendee', 'AttendeeController@addNewAttendee');
