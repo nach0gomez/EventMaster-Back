@@ -135,6 +135,7 @@ class EventController extends Controller
                                   ->where('date', '=', $request->date)
                                   ->where('event_type', '=', $request->event_type)
                                   ->where('location', 'like', '%' . $request->location . '%');
+                                  
                         } else {
                             $query->where('title', 'like', '%' . $request->title . '%')
                                   ->where('date', '=', $request->date)
@@ -199,6 +200,7 @@ class EventController extends Controller
                     } else { // si no tiene nada
                         if ($request->has('location') && $request->location != null) { // si tiene location
                             $query->where('location', 'like', '%' . $request->location . '%');
+                            
                         } else {
                             if (!$request->has('event_type') && !$request->has('date') && !$request->has('title') && !$request->has('location')) {
                                 return response()->json([
@@ -211,8 +213,8 @@ class EventController extends Controller
                 }
             }
             // Obtener los resultados de la consulta
-            $events = $query->get();
-    
+            $events = $query->with('attendees')->get();
+
             if ($events->isEmpty()) {
                 return response()->json([
                     'res' => false,
