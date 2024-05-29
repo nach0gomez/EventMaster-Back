@@ -3,8 +3,12 @@
 namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use  Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens;
 
@@ -38,5 +42,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Event::class, 'attendees', 'id_user', 'id_event');
     }
-
+         //es un identificador que se almacena en una parte del JSON web token
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+        //contiene cualquier reclamo personalizado que desee incluir en su token JWT
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }
