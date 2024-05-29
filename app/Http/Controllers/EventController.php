@@ -8,11 +8,17 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response; 
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
 
-
+    public function __construct()
+    {
+         //este middleware permite que solo los usuarios autenticados puedan acceder a los metodos del controlador
+        $this->middleware('auth:sanctum');
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -21,6 +27,7 @@ class EventController extends Controller
      */
     public function addNewEvent(Request $request)
     {
+         
         $validator = Validator::make($request->all(), [
 
             'title'=> 'required|string',
@@ -123,7 +130,6 @@ class EventController extends Controller
     //Filtrar eventos por fecha, tipo de evento, título y ubicación
     public function getEventsFilter(Request $request)
     {
-        
         $validator = Validator::make($request->all(), [
 
             'title'=> 'required|string',
@@ -293,6 +299,7 @@ class EventController extends Controller
                 ]);
             }
         }
+    
     }
     //filtra eventos por usuario
     public function getEventsFilterByUser(Request $request)
@@ -303,7 +310,7 @@ class EventController extends Controller
         'date'=> 'nullable|string',
         'location'=> 'nullable|string',
         'event_type'=> 'nullable|string',
-        'id_user' => 'required|numeric|exists:users,id_user',
+        'id_user' => 'required|string|exists:users,id_user',
     ]);
     $validator2 = Validator::make($request->all(), [
 
@@ -311,7 +318,7 @@ class EventController extends Controller
         'date'=> 'required|string',
         'location'=> 'nullable|string',
         'event_type'=> 'nullable|string',
-        'id_user' => 'required|numeric|exists:users,id_user',
+        'id_user' => 'required|string|exists:users,id_user',
     ]);
     $validator3 = Validator::make($request->all(), [
 
@@ -319,7 +326,7 @@ class EventController extends Controller
         'date'=> 'nullable|string',
         'location'=> 'required|string',
         'event_type'=> 'nullable|string',
-        'id_user' => 'required|numeric|exists:users,id_user',
+        'id_user' => 'required|string|exists:users,id_user',
     ]);
     $validator4 = Validator::make($request->all(), [
 
@@ -327,7 +334,7 @@ class EventController extends Controller
         'date'=> 'nullable|string',
         'location'=> 'nullable|string',
         'event_type'=> 'required|string',
-        'id_user' => 'required|numeric|exists:users,id_user',
+        'id_user' => 'required|string|exists:users,id_user',
     ]);
     $validator5 = Validator::make($request->all(), [
 
@@ -338,10 +345,13 @@ class EventController extends Controller
         'id_user' => 'required|numeric|exists:users,id_user',
     ]);
     if($validator->fails() && $validator2->fails() && $validator3->fails() && $validator5->passes() && $validator4->fails()){
+        
+        $events = Event::all()->where('status', 1)
+                            ->where('id_user', '=', $request->id_user);
+        
         return response()->json([
             'res' => true,
-            'data' => $events = Event::all()->where('status', 1)
-                                            ->where('id_user', '=', $request->id_user)
+            'data' => $events->values()
         ]);
     }else
         {try {

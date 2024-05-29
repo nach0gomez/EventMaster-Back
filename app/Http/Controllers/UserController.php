@@ -24,6 +24,9 @@ class UserController extends Controller
 {
     public function __construct()
     {
+       //este middleware permite que solo los usuarios autenticados puedan acceder a los metodos del controlador
+       //y las excepciones que se encuentran en el except
+       $this->middleware('auth:sanctum')->except('addNewUser','generateRandomPassword'.'updatePassword');
     }
 
     /**
@@ -74,7 +77,7 @@ class UserController extends Controller
             'username' => 'required|string|max:25|unique:users,username',
             'document' => 'required|numeric|unique:users,document',
             'email' => 'required|string|max:50|unique:users,email',
-            'password' => 'required|string|max:20',
+            'password' => 'required|confirmed|string|max:20',
             'is_eplanner' => 'required|boolean',
             'is_eattendee' => 'required|boolean',
         ], [

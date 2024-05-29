@@ -18,6 +18,8 @@ class PersonController extends Controller
 
     public function __construct()
     {
+        //este middleware permite que solo los usuarios autenticados puedan acceder a los metodos del controlador
+        $this->middleware('auth:sanctum')->except('addNewPerson','Password');
     }
 
     /**
