@@ -8,11 +8,17 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
 
-
+    public function __construct()
+    {
+        //este middleware permite que solo los usuarios autenticados puedan acceder a los metodos del controlador
+        $this->middleware('auth:sanctum');
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -21,18 +27,19 @@ class EventController extends Controller
      */
     public function addNewEvent(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
 
-            'title'=> 'required|string',
-            'description'=> 'required|string',
-            'date'=> 'required|string',
-            'time'=> 'required|string',
-            'location'=> 'required|string',
-            'duration'=> 'required|numeric',
-            'status'=> 'required|string',
-            'event_type'=> 'required|string',
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'date' => 'required|string',
+            'time' => 'required|string',
+            'location' => 'required|string',
+            'duration' => 'required|numeric',
+            'status' => 'required|string',
+            'event_type' => 'required|string',
             'id_user' => 'required|numeric|exists:users,id_user',
-            'restriction_minors_allowed'=> 'required|boolean',
+            'restriction_minors_allowed' => 'required|boolean',
             'max_attendees' => 'required|numeric'
         ]);
 
@@ -73,7 +80,7 @@ class EventController extends Controller
             return response()->json($validator->errors()->all(), 422);
         }
     }
-    
+
     public function getEventWithAttendees(Request $request)
     {
         try {
@@ -89,7 +96,7 @@ class EventController extends Controller
             ]);
         }
     }
-    
+
     public function getAllEvents()
     {
         //retornamos todos los eventos suponeindo que el estado activado es 1
@@ -118,282 +125,419 @@ class EventController extends Controller
                 'msg' => $e->getMessage()
             ]);
         }
-
     }
     //Filtrar eventos por fecha, tipo de evento, título y ubicación
     public function getEventsFilter(Request $request)
     {
-        try {
-            $query = Event::query();
-    
-            // Filtrar por tipo de evento si se proporciona
-            if ($request->has('event_type') && $request->event_type != null) { // si tiene categoria
-                if ($request->has('date') && $request->date != null) { // si tiene fecha
-                    if ($request->has('title') && $request->title != null) { // si tiene título
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                                  
-                        } else {
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type);
+        $validator = Validator::make($request->all(), [
+
+            'title' => 'required|string',
+            'date' => 'nullable|string',
+            'location' => 'nullable|string',
+            'event_type' => 'nullable|string',
+        ]);
+        $validator2 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'required|string',
+            'location' => 'nullable|string',
+            'event_type' => 'nullable|string',
+        ]);
+        $validator3 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'nullable|string',
+            'location' => 'required|string',
+            'event_type' => 'nullable|string',
+        ]);
+        $validator4 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'nullable|string',
+            'location' => 'nullable|string',
+            'event_type' => 'required|string',
+        ]);
+        if ($validator->fails() && $validator2->fails() && $validator3->fails() && $validator4->fails()) {
+            return response()->json([
+                'res' => true,
+                'data' => $events = Event::all()->where('status', 1)
+            ]);
+        } else {
+            try {
+                $query = Event::query();
+
+                // Filtrar por tipo de evento si se proporciona
+                if ($request->has('event_type') && $request->event_type != null) { // si tiene categoria
+                    if ($request->has('date') && $request->date != null) { // si tiene fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('date', '=', $request->date)
+                                    ->where('event_type', '=', $request->event_type)
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('date', '=', $request->date)
+                                    ->where('event_type', '=', $request->event_type);
+                                $events = $query->get();
+                            }
+                        } else { // si no tiene título pero si categoria y fecha
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('date', '=', $request->date)
+                                    ->where('event_type', '=', $request->event_type)
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('date', '=', $request->date)
+                                    ->where('event_type', '=', $request->event_type);
+                                $events = $query->get();
+                            }
                         }
-                    } else { // si no tiene título pero si categoria y fecha
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                        } else {
-                            $query->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type);
+                    } else { // si tiene categoria pero no fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título y categoria
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('event_type', '=', $request->event_type)
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('event_type', '=', $request->event_type);
+                                $events = $query->get();
+                            }
+                        } else { // si no tiene título ni fecha, pero si categoria
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('event_type', '=', $request->event_type)
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('event_type', '=', $request->event_type);
+                                $events = $query->get();
+                            }
                         }
                     }
-                } else { // si tiene categoria pero no fecha
-                    if ($request->has('title') && $request->title != null) { // si tiene título y categoria
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                        } else {
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('event_type', '=', $request->event_type);
+                } else { // si no tiene categoria
+                    if ($request->has('date') && $request->date != null) { // si tiene fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('date', '=', $request->date)
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('date', '=', $request->date);
+                                $events = $query->get();
+                            }
+                        } else { // si no tiene título ni categoria pero si fecha
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('date', '=', $request->date)
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('date', '=', $request->date);
+                                $events = $query->get();
+                            }
                         }
-                    } else { // si no tiene título ni fecha, pero si categoria
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                        } else {
-                            $query->where('event_type', '=', $request->event_type);
-                        }
-                    }
-                }
-            } else { // si no tiene categoria
-                if ($request->has('date') && $request->date != null) { // si tiene fecha
-                    if ($request->has('title') && $request->title != null) { // si tiene título
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                        } else {
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date);
-                        }
-                    } else { // si no tiene título ni categoria pero si fecha
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('date', '=', $request->date)
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                        } else {
-                            $query->where('date', '=', $request->date);
-                        }
-                    }
-                } else { // si no tiene categoria ni fecha
-                    if ($request->has('title') && $request->title != null) { // si tiene título
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('location', 'like', '%' . $request->location . '%');
-                        } else {
-                            $query->where('title', 'like', '%' . $request->title . '%');
-                        }
-                    } else { // si no tiene nada
-                        if ($request->has('location') && $request->location != null) { // si tiene location
-                            $query->where('location', 'like', '%' . $request->location . '%');
-                            
-                        } else {
-                            if (!$request->has('event_type') && !$request->has('date') && !$request->has('title') && !$request->has('location')) {
-                                return response()->json([
-                                    'res' => false,
-                                    'msg' => 'No se proporcionaron filtros para la consulta'
-                                ]);
+                    } else { // si no tiene categoria ni fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('title', 'like', '%' . $request->title . '%')
+                                    ->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                $query->where('title', 'like', '%' . $request->title . '%');
+                                $events = $query->get();
+                            }
+                        } else { // si no tiene nada
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                $query->where('location', 'like', '%' . $request->location . '%');
+                                $events = $query->get();
+                            } else {
+                                if (!$request->has('event_type') && !$request->has('date') && !$request->has('title') && !$request->has('location')) {
+                                    return response()->json([
+                                        'res' => false,
+                                        'msg' => 'No se proporcionaron filtros para la consulta'
+                                    ]);
+                                }
                             }
                         }
                     }
                 }
-            }
-            // Obtener los resultados de la consulta
-            $events = $query->with('attendees')->get();
+                if ($request->has('event_type') && $request->event_type == 'null') { // si tiene categoria null
+                    if ($request->has('date') && $request->date == 'null') { // si tiene fecha null
+                        if ($request->has('title') && $request->title == 'null') { // si tiene título null
+                            if ($request->has('location') && $request->location == 'null') { // si tiene location null
 
-            if ($events->isEmpty()) {
+                                $events = Event::all()->where('status', 1);
+                            }
+                        }
+                    }
+                }
+
+                // Obtener los resultados de la consulta
+
+
+                if ($events->isEmpty()) {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'No se encontraron eventos con esas características'
+                    ]);
+                }
+
+                return response()->json([
+                    'res' => 'true',
+                    'data' => $events
+                ]);
+            } catch (Exception $e) {
                 return response()->json([
                     'res' => false,
-                    'msg' => 'No se encontraron eventos con esas características'
+                    'msg' => $e->getMessage()
                 ]);
             }
-    
-            return response()->json([
-                'res' => 'true',
-                'data' => $events
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'res' => false,
-                'msg' => $e->getMessage()
-            ]);
         }
     }
     //filtra eventos por usuario
     public function getEventsFilterByUser(Request $request)
-{
-    try {
-        $query = Event::query();
+    {
+        $validator = Validator::make($request->all(), [
 
-        // Filtrar por tipo de evento si se proporciona
-        if ($request->has('event_type') && $request->event_type != null) { // si tiene categoria
-            if ($request->has('date') && $request->date != null) { // si tiene fecha
-                if ($request->has('title') && $request->title != null) { // si tiene título
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
+            'title' => 'required|string',
+            'date' => 'nullable|string',
+            'location' => 'nullable|string',
+            'event_type' => 'nullable|string',
+            'id_user' => 'required|string|exists:users,id_user',
+        ]);
+        $validator2 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'required|string',
+            'location' => 'nullable|string',
+            'event_type' => 'nullable|string',
+            'id_user' => 'required|string|exists:users,id_user',
+        ]);
+        $validator3 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'nullable|string',
+            'location' => 'required|string',
+            'event_type' => 'nullable|string',
+            'id_user' => 'required|string|exists:users,id_user',
+        ]);
+        $validator4 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'nullable|string',
+            'location' => 'nullable|string',
+            'event_type' => 'required|string',
+            'id_user' => 'required|string|exists:users,id_user',
+        ]);
+        $validator5 = Validator::make($request->all(), [
+
+            'title' => 'nullable|string',
+            'date' => 'nullable|string',
+            'location' => 'nullable|string',
+            'event_type' => 'nullable|string',
+            'id_user' => 'required|numeric|exists:users,id_user',
+        ]);
+        if ($validator->fails() && $validator2->fails() && $validator3->fails() && $validator5->passes() && $validator4->fails()) {
+
+            $events = Event::all()->where('status', 1)
+                ->where('id_user', '=', $request->id_user);
+
+            return response()->json([
+                'res' => true,
+                'data' => $events->values()
+            ]);
+        } else {
+            try {
+                $query = Event::query();
+
+                // Filtrar por tipo de evento si se proporciona
+                if ($request->has('event_type') && $request->event_type != null) { // si tiene categoria
+                    if ($request->has('date') && $request->date != null) { // si tiene fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('date', '=', $request->date)
+                                        ->where('event_type', '=', $request->event_type)
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('date', '=', $request->date)
+                                        ->where('event_type', '=', $request->event_type)
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
+                        } else { // si no tiene título pero si categoria y fecha
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('date', '=', $request->date)
+                                        ->where('event_type', '=', $request->event_type)
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('date', '=', $request->date)
+                                        ->where('event_type', '=', $request->event_type)
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
                         }
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('id_user', '=', $request->id_user);
+                    } else { // si tiene categoria pero no fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título y categoria
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('event_type', '=', $request->event_type)
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('event_type', '=', $request->event_type)
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
+                        } else { // si no tiene título ni fecha, pero si categoria
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('event_type', '=', $request->event_type)
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('event_type', '=', $request->event_type)
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
                         }
                     }
-                } else { // si no tiene título pero si categoria y fecha
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('date', '=', $request->date)
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    }
-                }
-            } else { // si tiene categoria pero no fecha
-                if ($request->has('title') && $request->title != null) { // si tiene título y categoria
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('event_type', '=', $request->event_type)
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    }
-                } else { // si no tiene título ni fecha, pero si categoria
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('event_type', '=', $request->event_type)
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('event_type', '=', $request->event_type)
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    }
-                }
-            }
-        } else { // si no tiene categoria
-            if ($request->has('date') && $request->date != null) { // si tiene fecha
-                if ($request->has('title') && $request->title != null) { // si tiene título
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('date', '=', $request->date)
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    }
-                } else { // si no tiene título ni categoria pero si fecha
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('date', '=', $request->date)
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('date', '=', $request->date)
-                                  ->where('id_user', '=', $request->id_user);
+                } else { // si no tiene categoria
+                    if ($request->has('date') && $request->date != null) { // si tiene fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('date', '=', $request->date)
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('date', '=', $request->date)
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
+                        } else { // si no tiene título ni categoria pero si fecha
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('date', '=', $request->date)
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('date', '=', $request->date)
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
                         }
-                    }
-                }
-            } else { // si no tiene categoria ni fecha
-                if ($request->has('title') && $request->title != null) { // si tiene título
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        }
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('title', 'like', '%' . $request->title . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    }
-                } else { // si no tiene nada
-                    if ($request->has('location') && $request->location != null) { // si tiene location
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('location', 'like', '%' . $request->location . '%')
-                                  ->where('id_user', '=', $request->id_user);
-                        } 
-                    } else {
-                        if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
-                            $query->where('id_user', '=', $request->id_user);
-                        } else {
-                            if (!$request->has('event_type') && !$request->has('date') && !$request->has('title') && !$request->has('location') && !$request->has('id_user')) {
-                                return response()->json([
-                                    'res' => false,
-                                    'msg' => 'No se proporcionaron filtros para la consulta'
-                                ]);
+                    } else { // si no tiene categoria ni fecha
+                        if ($request->has('title') && $request->title != null) { // si tiene título
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('title', 'like', '%' . $request->title . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            }
+                        } else { // si no tiene nada
+                            if ($request->has('location') && $request->location != null) { // si tiene location
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('location', 'like', '%' . $request->location . '%')
+                                        ->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                }
+                            } else {
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $query->where('id_user', '=', $request->id_user);
+                                    $events = $query->get();
+                                } else {
+                                    if (!$request->has('event_type') && !$request->has('date') && !$request->has('title') && !$request->has('location') && !$request->has('id_user')) {
+                                        return response()->json([
+                                            'res' => false,
+                                            'msg' => 'No se proporcionaron filtros para la consulta'
+                                        ]);
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                if ($request->has('event_type') && $request->event_type == null) { // si tiene categoria null
+                    if ($request->has('date') && $request->date == null) { // si tiene fecha null
+                        if ($request->has('title') && $request->title == null) { // si tiene título null
+                            if ($request->has('location') && $request->location == null) { // si tiene location null
+                                if ($request->has('id_user') && $request->id_user != null) { // si tiene id_user
+                                    $events = Event::all()->where('status', 1)
+                                        ->where('id_user', '=', $request->id_user);
+                                    // Obtener los resultados de la consulta
+                                    $events = $events->with('attendees')->get();
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                if ($events->isEmpty()) {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'No se encontraron eventos con esas características'
+                    ]);
+                }
+
+                return response()->json([
+                    'res' => 'true',
+                    'data' => $events
+                ]);
+            } catch (Exception $e) {
+                return response()->json([
+                    'res' => false,
+                    'msg' => $e->getMessage()
+                ]);
             }
         }
-
-        // Obtener los resultados de la consulta
-        $events = $query->get();
-
-        if ($events->isEmpty()) {
-            return response()->json([
-                'res' => false,
-                'msg' => 'No se encontraron eventos con esas características'
-            ]);
-        }
-
-        return response()->json([
-            'res' => 'true',
-            'data' => $events
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'res' => false,
-            'msg' => $e->getMessage()
-        ]);
     }
-}
 
 
 
@@ -407,18 +551,18 @@ class EventController extends Controller
     public function editEvent(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            
+
             'id_event' => 'required|numeric|exists:events,id_event',
-            'title'=> 'required|string',
-            'description'=> 'required|string',
-            'date'=> 'required|string',
-            'time'=> 'required|string',
-            'location'=> 'required|string',
-            'duration'=> 'required|numeric',
-            'status'=> 'required|string',
-            'event_type'=> 'required|string',
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'date' => 'required|string',
+            'time' => 'required|string',
+            'location' => 'required|string',
+            'duration' => 'required|numeric',
+            'status' => 'required|string',
+            'event_type' => 'required|string',
             'id_user' => 'required|numeric|exists:users,id_user',
-            'restriction_minors_allowed'=> 'required|boolean',
+            'restriction_minors_allowed' => 'required|boolean',
             'max_attendees' => 'required|numeric'
         ]);
 
