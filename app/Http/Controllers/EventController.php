@@ -130,28 +130,24 @@ class EventController extends Controller
     public function getEventsFilter(Request $request)
     {
         $validator = Validator::make($request->all(), [
-
             'title' => 'required|string',
             'date' => 'nullable|string',
             'location' => 'nullable|string',
             'event_type' => 'nullable|string',
         ]);
         $validator2 = Validator::make($request->all(), [
-
             'title' => 'nullable|string',
             'date' => 'required|string',
             'location' => 'nullable|string',
             'event_type' => 'nullable|string',
         ]);
         $validator3 = Validator::make($request->all(), [
-
             'title' => 'nullable|string',
             'date' => 'nullable|string',
             'location' => 'required|string',
             'event_type' => 'nullable|string',
         ]);
         $validator4 = Validator::make($request->all(), [
-
             'title' => 'nullable|string',
             'date' => 'nullable|string',
             'location' => 'nullable|string',
@@ -160,11 +156,11 @@ class EventController extends Controller
         if ($validator->fails() && $validator2->fails() && $validator3->fails() && $validator4->fails()) {
             return response()->json([
                 'res' => true,
-                'data' => $events = Event::all()->where('status', 1)
+                'data' => $events = Event::with('attendees')->where('status', 1)->get()
             ]);
         } else {
             try {
-                $query = Event::query();
+                $query = Event::with('attendees');
 
                 // Filtrar por tipo de evento si se proporciona
                 if ($request->has('event_type') && $request->event_type != null) { // si tiene categoria
@@ -265,20 +261,8 @@ class EventController extends Controller
                         }
                     }
                 }
-                if ($request->has('event_type') && $request->event_type == 'null') { // si tiene categoria null
-                    if ($request->has('date') && $request->date == 'null') { // si tiene fecha null
-                        if ($request->has('title') && $request->title == 'null') { // si tiene título null
-                            if ($request->has('location') && $request->location == 'null') { // si tiene location null
-
-                                $events = Event::all()->where('status', 1);
-                            }
-                        }
-                    }
-                }
 
                 // Obtener los resultados de la consulta
-
-
                 if ($events->isEmpty()) {
                     return response()->json([
                         'res' => false,
@@ -298,6 +282,8 @@ class EventController extends Controller
             }
         }
     }
+
+
     //filtra eventos por usuario
     public function getEventsFilterByUser(Request $request)
     {
