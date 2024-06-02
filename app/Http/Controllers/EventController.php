@@ -12,6 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
+
 {
 
     public function __construct()
