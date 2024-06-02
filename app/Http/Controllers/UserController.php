@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use JWTAuth;
@@ -122,22 +123,63 @@ class UserController extends Controller
     }
 
 
-    public function editUser(Request $request, $id)
-    {
-        if ($id != $request->id_user) {
-            return response()->json(['errors' => array(['code' => 401, 'message' => 'No se suministran los parámetros mínimos de búsqueda.'])], 401);
-        } else {
-            $user = new User;
-            $user = User::findOrFail($id);
-            $user->email = $request->email;
-            $user->username = $request->username;
-            $user->document = $request->document;
-            $user->password = Hash::make($request->password);
-            $user->status = true;
-            // Guardamos el cambio en nuestro modelo
-            $user->save();
-        }
+    public function editUser(Request $request)
+{
+            $validator = Validator::make($request->all(), [
+                'id_user' => 'required|numeric',
+                'first_name' => 'required|string|max:30',
+                'middle_name' => 'nullable|string|max:30',
+                'last_name' => 'required|string|max:30',
+                'second_last_name' => 'nullable|string|max:30',
+                'document' => [
+                    'required',
+                    'numeric',
+                    Rule::unique('users', 'document')->ignore($request->id_user, 'id_user'),
+                ],
+                'email' => [
+                    'required',
+                    'string',
+                    Rule::unique('users', 'email')->ignore($request->id_user, 'id_user'),
+                ],
+                'username' => [
+                    'required',
+                    'string',
+                    Rule::unique('users', 'username')->ignore($request->id_user, 'id_user'),
+                ],
+                'is_eplanner' => 'required|boolean',
+                'is_eattendee' => 'required|boolean',
+            ], [
+                'username.unique' => 'El nombre de usuario ya esta en uso.',
+            'document.unique' => 'El documento ya esta registrado en nuestra base de datos.',
+            'email.unique' => 'El correo electronico ya esta registrado en nuestra base de datos.',
+            ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors()->all(), 422);
     }
+
+    try {
+        // Recuperar el usuario actual por id_user
+        $person = User::findOrFail($request->id_user);
+         // Actualizar los datos del usuario
+        $person->first_name = $request->first_name;
+        $person->middle_name = $request->middle_name;
+        $person->last_name = $request->last_name;
+        $person->second_last_name = $request->second_last_name;
+        $person->username = $request->username;
+        $person->document = $request->document;
+        $person->email = $request->email;
+        $person->is_eplanner = $request->is_eplanner;
+        $person->is_eattendee = $request->is_eattendee;
+        $person->status = true;
+        $person->save();
+
+        return response()->json(['msg' => 'Persona actualizada con éxito'], 200);
+
+    } catch (Exception $e) {
+        return response()->json(['res' => false, 'msg' => $e->getMessage()], 422);
+    }
+}
 
     public function deleteUser(Request $request)
     {
