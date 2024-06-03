@@ -64,6 +64,7 @@ use App\Http\Controllers\Api\AuthController;
     Route::post('delete_user', 'UserController@deleteUser');
     Route::get('get_all_users', 'UserController@getAllUsers');
     Route::get('get_user_by_id', 'UserController@getUserById');
+    Route::put('edit_user_password', 'UserController@editPassword');
     //event
     Route::post('add_new_event', 'EventController@addNewEvent');
     Route::put('edit_event', 'EventController@editEvent');

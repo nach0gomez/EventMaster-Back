@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -122,6 +123,49 @@ class UserController extends Controller
         }
     }
 
+    public function editPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|max:50',
+            'password_old' => 'required|string|max:30|min:6',
+            'password' => 'required|confirmed|string|max:20|min:6',
+        ], [
+            'password_old.required' => 'La contraseña antigua es requerida.',
+            'password_old.min' => 'La contraseña antigua debe tener al menos 6 caracteres.',
+            'password_old.max' => 'La contraseña antigua debe tener como máximo 30 caracteres.',
+            'password.min' => 'La contraseña nueva debe tener al menos 6 caracteres.',
+            'password.required' => 'La contraseña es requerida.',
+            'password.confirmed' => 'Las contraseñas no coiciden.',
+        ]);
+
+        if ($validator->passes()) {
+
+            $user = User::where('email', $request->email)->first();
+            //DB::beginTransaction();
+            if (!$user || !Hash::check($request->password_old, $user->password)) {
+                return response()->json(['message' => 'Contraseña Incorrecta'], Response::HTTP_UNAUTHORIZED);
+            }
+            try {
+                $person = User::where('email', $request->email)->first();
+                $person->password = Hash::make($request->password);
+                $person->save();
+
+                return response()->json([
+                    'msg' => 'Contraseña Actualizada con exito'
+                ], 200);
+                //    DB::commit();
+            } catch (Exception $e) {
+                //DB::rollback();
+                return response()->json([
+                    'res' => false,
+                    'msg' => $e->getMessage()
+                ], 422);
+            }
+        }
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->all(), 422);
+        }
+    }
 
     public function editUser(Request $request)
 {
