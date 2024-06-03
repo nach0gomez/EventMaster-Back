@@ -127,32 +127,70 @@ class PersonController extends Controller
 
     public function editPerson(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string',
-            'middle_name' => 'nullable|string',
-            'last_name' => 'required|string',
-            'second_last_name' => 'nullable|string',
-            'document' => 'required|numeric|exists:users,document|exists:persons,document',
-            'email' => 'required|string',
-            'username' => 'required|string',
-            'status' => 'required|boolean',
-            'is_admin' => 'nullable|boolean',
+            'id_person' => 'required|numeric',
+            'first_name' => 'required|string|max:30',
+            'middle_name' => 'nullable|string|max:30',
+            'last_name' => 'required|string|max:30',
+            'second_last_name' => 'nullable|string|max:30',
+            //de esta manera podemos validar que el documento, el correo y el nombre de usuario no se repitan sin tener en cuenta el usuario que se esta editando
+            //y logrando asi, que si no se cambia el documento, el correo o el nombre de usuario, no se genere un error de duplicidad
+            'document' => [
+                'required',
+                'numeric',
+                Rule::unique('users', 'document')->ignore($request->id_user, 'id_user'),
+            ],
+            'username' => [
+                'required',
+                'string',
+                'max:25',
+                Rule::unique('users', 'username')->ignore($request->id_user, 'id_user'),
+            ],
+            'email' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('users', 'email')->ignore($request->id_user, 'id_user'),
+            ],
             'is_eplanner' => 'required|boolean',
             'is_eattendee' => 'required|boolean',
+        ], [
+            'username.unique' => 'El nombre de usuario ya esta en uso.',
+            'document.unique' => 'El documento ya esta registrado en nuestra base de datos.',
+            'email.unique' => 'El correo electronico ya esta registrado en nuestra base de datos.',
         ]);
         if ($validator->passes()) {
-            Person::where("document", $request->document)->update($request->all());
-            User::where("id_documentuser", $request->document)->update($request->only('email', 'document', 'username', "status"));
+            //DB::beginTransaction();
+            try {
+                $person = Person::findOrFail($request->id_person);
+                $person->first_name = $request->first_name;
+                $person->middle_name = $request->middle_name;
+                $person->last_name = $request->last_name;
+                $person->second_last_name = $request->second_last_name;
+                $person->username = $request->username;
+                $person->document = $request->document;
+                $person->email = $request->email;
+                $person->is_eplanner = $request->is_eplanner;
+                $person->is_eattendee = $request->is_eattendee;
+                $person->status = true;
+                $person->save();
 
-            return response()->json([
-                'res' => true,
-                'msg' => 'Persona editada con exito'
-            ], 200);
+                return response()->json([
+                    'msg' => 'Persona actualizada con exito'
+                ], 200);
+                //    DB::commit();
+            } catch (Exception $e) {
+                //DB::rollback();
+                return response()->json([
+                    'res' => false,
+                    'msg' => $e->getMessage()
+                ], 422);
+            }
         }
         if ($validator->fails()) {
             return response()->json($validator->errors()->all(), 422);
         }
+        
     }
 
     public function deletePerson(Request $request)
