@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Person;
 use App\Models\Event;
+use App\Models\Attendee;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -597,8 +598,47 @@ class EventController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function deleteEvent($id)
-    {
-        //
+    public function deleteEvent(Request $request)
+{
+    // Iniciar una transacción
+    $validator = Validator::make($request->all(), [
+
+        'id_event' => 'required|numeric|exists:events,id_event'
+    ]);
+
+   // DB::beginTransaction();
+   if ($validator->passes()) {
+    try {
+        // Encontrar el evento
+        //aqui se detiene
+        $event = Event::findOrFail($request->id_event);
+
+        // Eliminar todas las asistencias relacionadas con el evento
+        Attendee::where('id_event', $request->id_event)->delete();
+
+        // Eliminar el evento
+        $event->delete();
+
+        // Confirmar la transacción
+        //DB::commit();
+
+        return response()->json([
+            'res' => true,
+            'msg' => 'Evento y sus asistencias relacionadas eliminados con éxito'
+        ], Response::HTTP_OK);
+
+    } catch (Exception $e) {
+        // Revertir la transacción en caso de error
+       // DB::rollback();
     }
+}
+if ($validator->fails()) {
+    return response()->json($validator->errors()->all(), 422);
+}
+        return response()->json([
+            'res' => false,
+            'msg' => 'Error al eliminar el evento y sus asistencias relacionadas'
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    
+}
 }
