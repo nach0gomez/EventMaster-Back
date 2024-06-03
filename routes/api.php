@@ -79,6 +79,7 @@ use App\Http\Controllers\Api\AuthController;
     Route::delete('delete_attendee', 'AttendeeController@deleteAttendee');
     Route::get('get_all_attendees', 'AttendeeController@getAllAttendees');
     Route::get('get_attendee_by_id', 'AttendeeController@getAttendeeById');
+    Route::get('get_attendees_filter_by_user', 'AttendeeController@getAttendeesFilterByUser'); //mis eventos inscritos
     Route::get('get_attendees_by_event_id', 'AttendeeController@getAttendeesByEventId');
     Route::get('delete_attendee', 'AttendeeController@deleteAttendee');
 });
