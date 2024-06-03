@@ -547,7 +547,7 @@ class EventController extends Controller
             'time' => 'required|string',
             'location' => 'required|string',
             'duration' => 'required|numeric',
-            'status' => 'required|string',
+            'status' => 'required|numeric',
             'event_type' => 'required|string',
             'id_user' => 'required|numeric|exists:users,id_user',
             'restriction_minors_allowed' => 'required|boolean',
@@ -566,7 +566,7 @@ class EventController extends Controller
                 $event->time = $request->time;
                 $event->location = $request->location;
                 $event->duration = $request->duration;
-                $event->status = true; //por defecto guarda como true
+                $event->status = $request->status;
                 $event->id_user = $request->id_user;
                 $event->event_type = $request->event_type;
                 $event->restriction_minors_allowed = $request->restriction_minors_allowed;
@@ -631,14 +631,14 @@ class EventController extends Controller
         // Revertir la transacción en caso de error
        // DB::rollback();
     }
-}
-if ($validator->fails()) {
-    return response()->json($validator->errors()->all(), 422);
-}
-        return response()->json([
-            'res' => false,
-            'msg' => 'Error al eliminar el evento y sus asistencias relacionadas'
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
-    
+    }
+    if ($validator->fails()) {
+        return response()->json($validator->errors()->all(), 422);
+    }
+            return response()->json([
+                'res' => false,
+                'msg' => 'Error al eliminar el evento y sus asistencias relacionadas'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        
 }
 }
