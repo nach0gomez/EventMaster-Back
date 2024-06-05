@@ -9,6 +9,7 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\PasswordController;
 
 
 /*
@@ -83,14 +84,6 @@ use App\Http\Controllers\Api\AuthController;
     Route::get('get_attendees_filter_by_user', 'AttendeeController@getAttendeesFilterByUser'); //mis eventos inscritos
     Route::get('get_attendees_by_event_id', 'AttendeeController@getAttendeesByEventId');
     Route::get('delete_attendee', 'AttendeeController@deleteAttendee');
+    //password
+    Route::post('recovery_password', 'PasswordController@recovery');
 });
-
-
-//attendee
-Route::post('add_new_attendee', 'AttendeeController@addNewAttendee');
-Route::put('edit_attendee', 'AttendeeController@editAttendee');
-Route::delete('delete_attendee', 'AttendeeController@deleteAttendee');
-Route::get('get_all_attendees', 'AttendeeController@getAllAttendees');
-Route::get('get_attendee_by_id', 'AttendeeController@getAttendeeById');
-Route::get('get_attendees_by_event_id', 'AttendeeController@getAttendeesByEventId');
-Route::get('delete_attendee', 'AttendeeController@deleteAttendee');

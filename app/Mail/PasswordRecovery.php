@@ -25,7 +25,7 @@ try {
 
     //Recipients
     $mail->setFrom('notificaciones@demo2.linkisite.com', 'Event Master');
-    $mail->addAddress('dinomax3@outlook.com', 'Santiago');     //Add a recipient
+    $mail->addAddress('dinomax3@outlook.com');     //Add a recipient
 
     //Content
     $mail->isHTML(true);                                  //Set email format to HTML
