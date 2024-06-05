@@ -1,0 +1,761 @@
+openapi: 3.0.3
+info:
+  title: 'API para gestión de eventos EventMaster'
+  description: |-
+    Esta API maneja todos los llamados de la base de datos para la aplicación EventMaster para la gestión de eventos en su creación y asistencia de manera persistente.
+  version: '1.0'
+servers:
+  - url: https://demo2.linkisite.com/laravel/public/api
+  
+
+paths:
+  /login:
+    post:
+      summary: Autenticar al usuario
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        200:
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+        401:
+          description: No autorizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /logout:
+    post:
+      summary: Cerrar sesión
+      tags:
+        - Auth
+      responses:
+        200:
+          description: Sesión cerrada con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /add_new_user:
+    post:
+      summary: Registrar un nuevo usuario
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                middle_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                second_last_name:
+                  type: string
+                  nullable: true
+                username:
+                  type: string
+                document:
+                  type: integer
+                email:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                password_confirmation:
+                  type: string
+                  format: password
+                is_eplanner:
+                  type: boolean
+                is_eattendee:
+                  type: boolean
+              required:
+                - first_name
+                - last_name
+                - username
+                - document
+                - email
+                - password
+                - password_confirmation
+                - is_eplanner
+                - is_eattendee
+      responses:
+        200:
+          description: Usuario creado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+        422:
+          description: Error al crear el usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /edit_user:
+    put:
+      summary: Editar los datos de un usuario
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_user:
+                  type: integer
+                first_name:
+                  type: string
+                middle_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                second_last_name:
+                  type: string
+                  nullable: true
+                document:
+                  type: integer
+                username:
+                  type: string
+                email:
+                  type: string
+                is_eplanner:
+                  type: boolean
+                is_eattendee:
+                  type: boolean
+              required:
+                - id_user
+                - first_name
+                - last_name
+                - document
+                - username
+                - email
+                - is_eplanner
+                - is_eattendee
+      responses:
+        200:
+          description: Usuario actualizado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+        422:
+          description: Error al actualizar el usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /get_all_users:
+    get:
+      summary: Obtener todos los usuarios
+      tags:
+        - User
+      responses:
+        200:
+          description: Lista de todos los usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /get_user_by_id:
+    get:
+      summary: Obtener información de un usuario por ID
+      tags:
+        - User
+      parameters:
+        - in: query
+          name: id_user
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Información del usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        422:
+          description: Error al obtener el usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /edit_user_password:
+    put:
+      summary: Actualizar la contraseña del usuario
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password_old:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password_old
+                - password
+      responses:
+        200:
+          description: Contraseña actualizada con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+        401:
+          description: Contraseña incorrecta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        422:
+          description: Error al actualizar la contraseña
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /add_new_event:
+    post:
+      summary: Agregar un nuevo evento
+      tags:
+        - Event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                date:
+                  type: string
+                time:
+                  type: string
+                location:
+                  type: string
+                duration:
+                  type: number
+                status:
+                  type: string
+                event_type:
+                  type: string
+                id_user:
+                  type: integer
+                restriction_minors_allowed:
+                  type: boolean
+                max_attendees:
+                  type: number
+              required:
+                - title
+                - description
+                - date
+                - time
+                - location
+                - duration
+                - status
+                - event_type
+                - id_user
+                - restriction_minors_allowed
+                - max_attendees
+      responses:
+        200:
+          description: Evento registrado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+        422:
+          description: Error al registrar el evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /edit_event:
+    put:
+      summary: Editar un evento existente
+      tags:
+        - Event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_event:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+                date:
+                  type: string
+                time:
+                  type: string
+                location:
+                  type: string
+                duration:
+                  type: number
+                status:
+                  type: string
+                event_type:
+                  type: string
+                id_user:
+                  type: integer
+                restriction_minors_allowed:
+                  type: boolean
+                max_attendees:
+                  type: number
+              required:
+                - id_event
+                - title
+                - description
+                - date
+                - time
+                - location
+                - duration
+                - status
+                - event_type
+                - id_user
+                - restriction_minors_allowed
+                - max_attendees
+      responses:
+        200:
+          description: Evento actualizado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+        422:
+          description: Error al actualizar el evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /delete_event:
+    delete:
+      summary: Eliminar un evento
+      tags:
+        - Event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_event:
+                  type: integer
+      responses:
+        200:
+          description: Evento eliminado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+        422:
+          description: Error al eliminar el evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /get_all_events:
+    get:
+      summary: Obtener todos los eventos
+      tags:
+        - Event
+      responses:
+        200:
+          description: Lista de todos los eventos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /get_event_by_id:
+    get:
+      summary: Obtener información de un evento por ID
+      tags:
+        - Event
+      parameters:
+        - in: query
+          name: id_event
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Información del evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        422:
+          description: Error al obtener el evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /add_new_attendee:
+    post:
+      summary: Registrar un nuevo asistente
+      tags:
+        - Attendee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                document:
+                  type: integer
+                username:
+                  type: string
+                email:
+                  type: string
+              required:
+                - first_name
+                - last_name
+                - document
+                - username
+                - email
+      responses:
+        200:
+          description: Asistente registrado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+        422:
+          description: Error al registrar el asistente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /get_all_attendees:
+    get:
+      summary: Obtener todos los asistentes
+      tags:
+        - Attendee
+      responses:
+        200:
+          description: Lista de todos los asistentes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /get_attendees_filter_by_user:
+    get:
+      summary: "Obtener eventos inscritos por usuario"
+      tags:
+        - Attendee
+      description: >
+        Trae todos los eventos a los que un usuario está registrado.
+        Recibe los siguientes parámetros:
+        - title (opcional): Título del evento (cadena de texto).
+        - date (opcional): Fecha del evento (cadena de texto).
+        - location (opcional): Ubicación del evento (cadena de texto).
+        - event_type (opcional): Tipo de evento (cadena de texto).
+        - id_user (requerido): ID del usuario (cadena de texto, existente en la tabla de usuarios).
+        Puede recibir varios tipos de filtros, validados mediante un conjunto de validadores.
+      parameters:
+        - name: title
+          in: query
+          description: "Título del evento"
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: "Fecha del evento"
+          schema:
+            type: string
+        - name: location
+          in: query
+          description: "Ubicación del evento"
+          schema:
+            type: string
+        - name: event_type
+          in: query
+          description: "Tipo de evento"
+          schema:
+            type: string
+        - name: id_user
+          in: query
+          description: "ID del usuario"
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+          required: true
+      responses:
+        '200':
+          description: "Eventos inscritos encontrados"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                    description: "Indica si la solicitud fue exitosa"
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Event"
+        '404':
+          description: "No se encontraron eventos con las características especificadas"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                    description: "Indica si la solicitud fue exitosa"
+                  msg:
+                    type: string
+                    description: "Mensaje indicando la falta de eventos"
+        '500':
+          description: "Error interno del servidor"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                    description: "Indica si la solicitud fue exitosa"
+                  msg:
+                    type: string
+                    description: "Mensaje de error específico"
+  
+  /delete_attendee:
+    delete:
+      summary: Eliminar a un usuario de un evento
+      tags:
+        - Attendee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_user:
+                  type: integer
+                id_event:
+                  type: integer
+              required:
+                - id_user
+                - id_event
+      responses:
+        200:
+          description: Usuario eliminado del evento con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+        422:
+          description: Error al eliminar el usuario del evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: boolean
+                  msg:
+                    type: string
+
+  /get_attendees_by_event_id:
+    get:
+      summary: Obtener todos los asistentes a un evento
+      tags:
+        - Attendee
+      parameters:
+        - in: query
+          name: id_event
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Lista de todos los asistentes al evento
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        422:
+          description: Error al obtener la lista de asistentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
