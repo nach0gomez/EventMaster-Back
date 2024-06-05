@@ -44,8 +44,9 @@ use App\Http\Controllers\PasswordController;
     Route::get('test', 'TestController@test');
     Route::post('refresh', [AuthController::class, 'refresh']);
 
-    //person
-    Route::post('add_new_person', 'PersonController@addNewPerson'); 
+    //password
+    Route::post('recovery_password', 'PasswordController@recovery');
+    
     //user
     Route::post('add_new_user', 'UserController@addNewUser'); //metodo principal de registro de un usuario
 
@@ -84,6 +85,5 @@ use App\Http\Controllers\PasswordController;
     Route::get('get_attendees_filter_by_user', 'AttendeeController@getAttendeesFilterByUser'); //mis eventos inscritos
     Route::get('get_attendees_by_event_id', 'AttendeeController@getAttendeesByEventId');
     Route::get('delete_attendee', 'AttendeeController@deleteAttendee');
-    //password
-    Route::post('recovery_password', 'PasswordController@recovery');
+    
 });
