@@ -11,11 +11,14 @@ use JWTAuth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Person;
-use Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
 
-//use Mail;
-//use Mail\Create_User_Mail;
-//use Mail\NotificateRecuperacionContraseña;
+require 'PHPMailer/Exception.php';
+require 'PHPMailer/PHPMailer.php';
+require 'PHPMailer/SMTP.php';
+
 
 /**
  * @group Users
@@ -28,7 +31,7 @@ class UserController extends Controller
     {
        //este middleware permite que solo los usuarios autenticados puedan acceder a los metodos del controlador
        //y las excepciones que se encuentran en el except
-       $this->middleware('auth:sanctum')->except('addNewUser','generateRandomPassword'.'updatePassword');
+       $this->middleware('auth:sanctum')->except('addNewUser','generateRandomPassword'.'updatePassword','emailValidatorCode','generateRandomValidator');
     }
 
     /**
@@ -103,6 +106,7 @@ class UserController extends Controller
                 $person->password = Hash::make($request->password);
                 $person->is_eplanner = $request->is_eplanner;
                 $person->is_eattendee = $request->is_eattendee;
+                $person->email_verificate_confirm=$request->email_verificate_confirm;
                 $person->status = true;
                 $person->save();
 
@@ -233,12 +237,11 @@ class UserController extends Controller
             'res' => true,
             'msg' => 'Persona eliminada con exito'
         ], 200);
-    }
+}
 
-    /*cambio de contraseña*/
-    public function generateRandomPassword($length = 8)
+    public function generateRandomValidator($length = 8)
     {
-        $characters = '0123456789abcd';
+        $characters = '0123456789';
         $randomString = '';
         for ($i = 0; $i < $length; $i++) {
             $randomString .= $characters[rand(0, strlen($characters) - 1)];
@@ -246,40 +249,129 @@ class UserController extends Controller
         return $randomString;
     }
 
-    public function updatePassword(Request $request)
+    public function codeValidator(Request $request)
     {
 
-        // Se agrega la validación
         $validator = Validator::make($request->all(), [
-            'document' => 'required|exists:users,document',
+            'id_user' => 'required|numeric|exists:users,id_user',
+            'code_verificate' => 'required|string|max:8|min:8',
+        ], [
+            'code_verificate.required' => 'El email es requerido',
+            'code_verificate.string' => 'El email debe ser un texto',
+            'code_verificate.max' => 'El email debe tener maximo 8 caracteres',
+            'code_verificate.min' => 'El email debe tener minimo 8 caracteres',
+            'id_user.exists' => 'El usuario no esta registrado',
         ]);
+        
+        if ($validator->passes()) {
 
+            //DB::beginTransaction();
+
+            try 
+         {
+                $person = User::findOrFail($request->id_user);
+                if ($person->email_verificate == $request->code_verificate) {
+                    $person->email_verificate_confirm = true;
+                    $person->save();
+                    return response()->json([
+                        'res' => true,
+                        'msg' => 'Correo verificado con exito'
+                    ]);
+                } else {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'El codigo no coincide'
+                    ], 422);
+                }
+         }
+            catch (Exception $e) {
+                //DB::rollback();
+                return response()->json([
+                    'res' => false,
+                    'msg' => $e->getMessage()
+                ], 422);
+            }
+        }
         if ($validator->fails()) {
             return response()->json($validator->errors()->all(), 422);
         }
-        try {
+    }
+    
+    public function emailValidatorCode(Request $request)
+    {
 
-            DB::beginTransaction();
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:50|exists:users,email',
+            
+        ], [
+            'email.required' => 'El email es requerido',
+            'email.string' => 'El email debe ser un texto',
+            'email.email' => 'El email debe ser un email valido',
+            'email.max' => 'El email debe tener maximo 50 caracteres',
+            'email.exists' => 'El email no esta registrado',
+            
+        ]);
 
-            // Generar contraseña aleatoria
-            $newPassword = $this->generateRandomPassword();
+        if ($validator->passes()) 
+        {
+            try {
+                 // Generar el codigo aleatorio
+                 $validatorConfirm = $this->generateRandomValidator();
 
-            // Hashear la nueva contraseña
-            $hashedPassword = Hash::make($newPassword);
+                    $person = User::where('email', $request->email)->firstOrFail();
+                    // guardamos el codigo en el campo email_verificate de la persona
+                    $person->email_verificate = $validatorConfirm;
+                    $person->save();
+               //creamos el email
+               $mail = new PHPMailer(true);
 
-            // Actualizar la contraseña del usuario
+                //configuraciones del servidor
+                $mail->SMTPDebug = 0;  //0 para no ver o SMTP::DEBUG_SERVER para debuguear       
+                $mail->isSMTP();                                            //enviar usando SMTP
+                $mail->Host       = 'mail.demo2.linkisite.com';                    // el servidor de correo que vamos a usar 
+                $mail->SMTPAuth   = true;                                   // permitir SMTP autentificacion
+                $mail->Username   = 'notificaciones@demo2.linkisite.com';                     //SMTP usuario
+                $mail->Password   = 'tR%0lQ?l7Z&t';                               //SMTP password
+                $mail->SMTPSecure = 'ssl';                                    //permitir encriptacion implicita TLS
+                $mail->Port       = 465;                                    //TCP puerto de conexion
 
-            User::where("document", $request->document)->update(['password' => $hashedPassword]);
-            Person::where("document", $request->document)->update(['password' => $hashedPassword]);
+                //destinatarios
+                $mail->setFrom('notificaciones@demo2.linkisite.com', 'Event Master');// remitente
+                $mail->addAddress($request->email);     //destinatario
+                
 
-            DB::commit();
+                //Contenido
+                $mail->isHTML(true);                                  //poner el email formato para HTML
+                $mail->Subject = 'Codigo De Validacion De Correo Electronico';
+                $mail->Body    =    'Hola! Gracias por registrarte en EVENT MASTER.<br>'
+                                    . 'Por favor, confirma tu correo electronico para poder acceder a tu cuenta.<br>'              
+                                    . 'Tu codigo de confirmacion es: <b>' . $validatorConfirm . '</b><br>'
+                                    . ' <b><a href="https://demo2.linkisite.com/login">Ir al Sitio</a>'
+                                    . '<br><br>Saludos,<br>Event Master'
+                                   ;
+                
 
+                //enviar el correo
+                $mail->send();
+                
 
-            return response()->json(['message' => 'la contraseña se actualizo con exito'], 200);
-        } catch (Exception $e) {
-
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 422);
+                return response()->json([
+                    'res' => true,
+                    'msg' => 'Correo enviado con exito'
+                ]);
+                //    DB::commit();
+                
+            } catch (Exception $e) {
+                //DB::rollback();
+                return response()->json([
+                    'res' => false,
+                    'msg' => $mail->ErrorInfo
+                ], 422);
+            }
+        }
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->all(), 422);
         }
     }
+
 }

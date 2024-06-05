@@ -30,7 +30,9 @@ class User extends Authenticatable implements JWTSubject
         'is_eplanner', 
         'is_eattendee', 
         'status', 
-        'document', 
+        'document',
+        'email_verificate',
+        'email_verificate_confirm',
         'password', 
         'username'];
     /**
@@ -41,6 +43,7 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verificate',
     ];
 
     public function events()

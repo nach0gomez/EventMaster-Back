@@ -46,9 +46,11 @@ use App\Http\Controllers\PasswordController;
 
     //password
     Route::post('recovery_password', 'PasswordController@recovery');
-    
+
     //user
     Route::post('add_new_user', 'UserController@addNewUser'); //metodo principal de registro de un usuario
+    Route::post('email_validator_code', 'UserController@emailValidatorCode'); //envio de correo electronico de confirmacion
+    Route::post('code_validator', 'UserController@codeValidator'); //cambio de estado una vez se confirma el correo
 
     //autentificacion de usuario para cada solicitud entrante al backend
     Route::middleware(['auth:sanctum'])->group(function () {
