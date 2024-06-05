@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 
-require 'app/Mail/PHPMailer/Exception.php';
-require 'app/Mail/PHPMailer/PHPMailer.php';
-require 'app/Mail/PHPMailer/SMTP.php';
+require 'PHPMailer/Exception.php';
+require 'PHPMailer/PHPMailer.php';
+require 'PHPMailer/SMTP.php';
 
 class PasswordController extends Controller
 {
@@ -17,30 +20,29 @@ class PasswordController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'Subject'=>'required|string|max:50|min:5',
-            'Body'=>'required|string|max:255|min:10',
-            'email' => 'required|string|email|max:50|exists:users,email ',
+            
+            'email' => 'required|email|max:50|exists:users,email',
         ], [
-            'Subject.required' => 'El asunto es requerido',
-            'Subject.string' => 'El asunto debe ser un texto',
-            'Subject.max' => 'El asunto debe tener maximo 50 caracteres',
-            'Subject.min' => 'El asunto debe tener minimo 5 caracteres',
-            'Body.required' => 'El cuerpo del mensaje es requerido',
-            'Body.string' => 'El cuerpo del mensaje debe ser un texto',
-            'Body.max' => 'El cuerpo del mensaje debe tener maximo 255 caracteres',
-            'Body.min' => 'El cuerpo del mensaje debe tener minimo 10 caracteres',
-           'email.required' => 'El email es requerido',
+            'email.required' => 'El email es requerido',
             'email.string' => 'El email debe ser un texto',
             'email.email' => 'El email debe ser un email valido',
             'email.max' => 'El email debe tener maximo 50 caracteres',
             'email.exists' => 'El email no esta registrado',
+            
         ]);
-
+        
         if ($validator->passes()) {
 
             //DB::beginTransaction();
-            
+
             try {
+
+                // Generar contraseña aleatoria
+                $newPassword = $this->generateRandomPassword();
+                // Hashear la nueva contraseña
+                $hashedPassword = Hash::make($newPassword);
+                // Actualizar la contraseña del usuario
+                User::where("email", $request->email)->update(['password' => $hashedPassword]);
                //creamos el email
                $mail = new PHPMailer(true);
 
@@ -57,20 +59,29 @@ class PasswordController extends Controller
                 //destinatarios
                 $mail->setFrom('notificaciones@demo2.linkisite.com', 'Event Master');// remitente
                 $mail->addAddress($request->email);     //destinatario
+                
 
                 //Contenido
                 $mail->isHTML(true);                                  //poner el email formato para HTML
-                $mail->Subject = $request->Subject;
-                $mail->Body    = $request->Body;
+                $mail->Subject = 'Recuperacion De Contrasena';
+                $mail->Body    =    'Hola, hemos recibido una solicitud para restablecer su contraseña.<br>'
+                                    . 'Su nueva contraseña es: <b>' . $newPassword . '</b><br>'
+                                    . 'Por favor cambie su contraseña en su próximo inicio de sesión.'. '</b><br>'
+                                    . ' <b><a href="https://demo2.linkisite.com/login">Ir al Sitio</a>'
+                                    . '<br><br>Saludos,<br>Event Master'
+                                   ;
+                
 
                 //enviar el correo
                 $mail->send();
+                
 
                 return response()->json([
                     'res' => true,
                     'msg' => 'Correo enviado con exito'
                 ]);
                 //    DB::commit();
+                
             } catch (Exception $e) {
                 //DB::rollback();
                 return response()->json([
@@ -83,4 +94,16 @@ class PasswordController extends Controller
             return response()->json($validator->errors()->all(), 422);
         }
     }
+    /*creacion aleatoria de contraseña*/
+    public function generateRandomPassword($length = 8)
+    {
+        $characters = '0123456789abcd';
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $randomString;
+    }
+
 }
+
