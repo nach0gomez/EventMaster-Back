@@ -39,6 +39,7 @@ class PasswordController extends Controller
         if ($validator->passes()) {
 
             //DB::beginTransaction();
+            
             try {
                //creamos el email
                $mail = new PHPMailer(true);
